@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { placements, placementKpis, type QuoteStatus } from "@/data/placements";
-import { money, moneyCompact, marketByCode } from "@/data/locale";
+import { marketByCode } from "@/data/locale";
+import { useI18n } from "@/lib/i18n";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ const kpiTone = {
 };
 
 export default function PlacementsPage() {
+  const { t, money, moneyCompact } = useI18n();
   const [selectedId, setSelectedId] = useState(placements[0].id);
   const selected = placements.find((p) => p.id === selectedId)!;
   const listRef = useStaggerReveal<HTMLDivElement>([]);
@@ -44,14 +46,13 @@ export default function PlacementsPage() {
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex items-center gap-3 border-b px-6 py-4 shrink-0 flex-wrap">
         <div>
-          <h1 className="text-[20px] font-bold tracking-tight">Placements</h1>
+          <h1 className="text-[20px] font-bold tracking-tight">{t("placements.title")}</h1>
           <p className="text-[12.5px] text-muted-foreground mt-0.5">
-            Market a risk to multiple carriers, then compare what came back — including the terms
-            that quietly changed.
+            {t("placements.subtitle")}
           </p>
         </div>
         <Button size="sm" className="ml-auto gap-1.5">
-          <Send className="size-3.5" /> New placement
+          <Send className="size-3.5" /> {t("placements.new")}
         </Button>
       </div>
 

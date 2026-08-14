@@ -27,6 +27,7 @@ import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { workItems, typeColors } from "@/data/work-items";
 import { cn } from "@/lib/utils";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
+import { useI18n } from "@/lib/i18n";
 
 const kpis = [
   { n: "9", l: "Requires Review", trend: null, icon: AlertCircle, tone: "danger" as const },
@@ -52,6 +53,7 @@ const statusMap: Record<string, Status> = {
 
 export default function ItemsPage() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
 
   const filtered = workItems.filter(
@@ -65,7 +67,7 @@ export default function ItemsPage() {
   return (
     <div className="flex-1 overflow-auto">
       <div className="px-8 pt-7 pb-10 max-w-[1200px] mx-auto w-full">
-        <h1 className="text-[26px] font-bold tracking-tight">Work Items</h1>
+        <h1 className="text-[26px] font-bold tracking-tight">{t("items.title")}</h1>
 
         <div className="grid grid-cols-5 gap-3 mt-6">
           {kpis.map((k) => {

@@ -15,11 +15,13 @@ import {
 import { flows } from "@/data/flows";
 import { cn } from "@/lib/utils";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
+import { useI18n } from "@/lib/i18n";
 
 const tabs = ["All", "Active", "Inactive"] as const;
 
 export default function FlowsPage() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [tab, setTab] = useState<(typeof tabs)[number]>("All");
   const [query, setQuery] = useState("");
 
@@ -34,9 +36,9 @@ export default function FlowsPage() {
   return (
     <div className="flex-1 overflow-auto">
       <div className="px-8 pt-7 pb-5 max-w-[1080px] mx-auto w-full">
-        <h1 className="text-[26px] font-bold tracking-tight">Flows</h1>
+        <h1 className="text-[26px] font-bold tracking-tight">{t("flows.title")}</h1>
         <p className="text-muted-foreground text-[13.5px] mt-1">
-          Create and manage your flows to automate tasks and processes.
+          {t("flows.subtitle")}
         </p>
 
         <div ref={listRef} className="mt-6 border rounded-xl bg-card overflow-hidden">

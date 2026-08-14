@@ -24,6 +24,7 @@ import {
   type VarScope,
 } from "@/data/settings-data";
 import { markets } from "@/data/locale";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -69,6 +70,7 @@ const scopeTone: Record<VarScope, string> = {
 };
 
 export default function SettingsPage() {
+  const { t } = useI18n();
   const [userQuery, setUserQuery] = useState("");
   const [env, setEnv] = useState<"prod" | "staging">("prod");
   const [scopeFilter, setScopeFilter] = useState<"All Scopes" | VarScope>("All Scopes");
@@ -86,9 +88,9 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 overflow-auto">
       <div className="px-8 pt-7 pb-14 max-w-[1120px] mx-auto w-full">
-        <h1 className="text-[26px] font-bold tracking-tight">Settings</h1>
+        <h1 className="text-[26px] font-bold tracking-tight">{t("settings.title")}</h1>
         <p className="text-muted-foreground text-[13.5px] mt-1">
-          Manage your organization settings, users, and resources.
+          {t("settings.subtitle")}
         </p>
 
         <Tabs defaultValue="workspaces" className="mt-6">

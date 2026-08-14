@@ -17,6 +17,7 @@ import {
   calibration,
 } from "@/data/insights-data";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 const lineTone: Record<string, string> = {
   "P&C": "bg-primary",
@@ -25,12 +26,13 @@ const lineTone: Record<string, string> = {
 };
 
 export default function InsightsPage() {
+  const { t } = useI18n();
   return (
     <div className="flex-1 overflow-auto">
       <div className="px-8 pt-7 pb-16 max-w-[1140px] mx-auto w-full">
-        <h1 className="text-[24px] font-bold tracking-tight">Ops Insights</h1>
+        <h1 className="text-[24px] font-bold tracking-tight">{t("insights.title")}</h1>
         <p className="text-muted-foreground text-[13.5px] mt-1">
-          Automation quality, throughput, and cost across every line of business. Last 30 days.
+          {t("insights.subtitle")}
         </p>
 
         {/* headline metrics */}

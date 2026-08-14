@@ -14,6 +14,7 @@ import {
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { runs, runKpis, type RunStatus, type StepStatus } from "@/data/runs";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const statusMap: Record<RunStatus, Status> = {
@@ -46,6 +47,7 @@ const filters = ["All", "prod", "staging"] as const;
 
 export default function RunsPage() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [env, setEnv] = useState<(typeof filters)[number]>("All");
   const [selectedId, setSelectedId] = useState(runs[0].id);
 
@@ -57,9 +59,9 @@ export default function RunsPage() {
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex items-center gap-3 border-b px-6 py-4 shrink-0 flex-wrap">
         <div>
-          <h1 className="text-[20px] font-bold tracking-tight">Live Runs</h1>
+          <h1 className="text-[20px] font-bold tracking-tight">{t("runs.title")}</h1>
           <p className="text-[12.5px] text-muted-foreground mt-0.5">
-            Every execution across your workspaces, with node-level trace and recovery.
+            {t("runs.subtitle")}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -78,16 +80,16 @@ export default function RunsPage() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm">Export</Button>
+          <Button variant="outline" size="sm">{t("common.export")}</Button>
         </div>
       </div>
 
       <div className="grid grid-cols-5 gap-3 px-6 py-4 border-b shrink-0">
         {runKpis.map((k) => {
-          const t = kpiTone[k.tone];
+          const tone = kpiTone[k.tone];
           return (
-            <div key={k.l} className={cn("rounded-xl border p-3.5", t.border, t.bg)}>
-              <div className={cn("text-[22px] font-bold tracking-tight tabular-nums", t.text)}>{k.n}</div>
+            <div key={k.l} className={cn("rounded-xl border p-3.5", tone.border, tone.bg)}>
+              <div className={cn("text-[22px] font-bold tracking-tight tabular-nums", tone.text)}>{k.n}</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">{k.l}</div>
             </div>
           );

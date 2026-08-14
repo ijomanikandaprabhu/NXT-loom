@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { products, type Line } from "@/data/products";
 import { marketByCode } from "@/data/locale";
+import { useI18n } from "@/lib/i18n";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ const statusMap: Record<string, Status> = {
 };
 
 export default function ProductsPage() {
+  const { t } = useI18n();
   const [line, setLine] = useState<(typeof lines)[number]>("All");
   const [selectedId, setSelectedId] = useState(products[0].id);
 
@@ -36,9 +38,9 @@ export default function ProductsPage() {
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex items-center gap-3 border-b px-6 py-4 shrink-0 flex-wrap">
         <div>
-          <h1 className="text-[20px] font-bold tracking-tight">Product Builder</h1>
+          <h1 className="text-[20px] font-bold tracking-tight">{t("products.title")}</h1>
           <p className="text-[12.5px] text-muted-foreground mt-0.5">
-            Configure insurance products, plans, and rules without code — then publish to every channel.
+            {t("products.subtitle")}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -58,7 +60,7 @@ export default function ProductsPage() {
             ))}
           </div>
           <Button size="sm" className="gap-1.5">
-            <Plus className="size-3.5" /> New product
+            <Plus className="size-3.5" /> {t("products.new")}
           </Button>
         </div>
       </div>

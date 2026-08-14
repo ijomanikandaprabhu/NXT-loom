@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { I18nProvider } from "@/lib/i18n";
 import { AppLayout } from "@/components/shell/app-layout";
 import AssistantPage from "@/pages/assistant-page";
 import ProductsPage from "@/pages/products-page";
@@ -14,8 +15,9 @@ import SettingsPage from "@/pages/settings-page";
 
 export default function App() {
   return (
-    <TooltipProvider delayDuration={200}>
-      <BrowserRouter>
+    <I18nProvider>
+      <TooltipProvider delayDuration={200}>
+        <BrowserRouter>
         <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<Navigate to="/assistant" replace />} />
@@ -32,7 +34,8 @@ export default function App() {
           </Route>
           <Route path="*" element={<Navigate to="/assistant" replace />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </I18nProvider>
   );
 }
