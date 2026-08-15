@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Building2, Eye, LogOut, RotateCcw, Sparkles } from "lucide-react";
+import { Bell, Building2, Eye, LogOut, RotateCcw, Search, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
 import { ResetDemo } from "./reset-demo";
+import { GlobalSearch, useSearchHotkey } from "./global-search";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { navItems } from "./nav-items";
@@ -34,6 +35,8 @@ export function AppTopbar() {
   const { user, allowedRoutes, signOut, external } = useAuth();
   const navigate = useNavigate();
   const [resetOpen, setResetOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  useSearchHotkey(useCallback(() => setSearchOpen(true), []));
 
   // Hide what the role cannot reach. RequireAuth still refuses a typed URL —
   // this only keeps the bar honest about what is actually available.
@@ -116,6 +119,15 @@ export function AppTopbar() {
 
       <LanguageSwitcher />
 
+      <button
+        onClick={() => setSearchOpen(true)}
+        title="Search this market (Ctrl K)"
+        className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors cursor-pointer"
+      >
+        <Search className="size-3.5" />
+        <kbd className="text-[10px] font-mono hidden sm:inline">⌘K</kbd>
+      </button>
+
       <button className="relative text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
         <Bell className="size-[18px]" />
       </button>
@@ -170,6 +182,7 @@ export function AppTopbar() {
         </DropdownMenu>
       )}
       <ResetDemo open={resetOpen} onOpenChange={setResetOpen} />
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }

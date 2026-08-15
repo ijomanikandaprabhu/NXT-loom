@@ -3,6 +3,7 @@ import { AlertTriangle, Check, Send, Sparkles, TrendingDown } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { BindAction } from "@/components/placements/bind-action";
 import { usePlacements } from "@/lib/placements-store";
+import { NewPlacementDialog } from "@/components/placements/new-placement-dialog";
 import { useAuth } from "@/lib/auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
@@ -42,6 +43,7 @@ export default function PlacementsPage() {
   const { placements, placementKpis } = useMarketData();
   const { chase, eventsFor } = usePlacements();
   const { external } = useAuth();
+  const [newOpen, setNewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = placements.find((p) => p.id === selectedId) ?? placements[0];
   const listRef = useStaggerReveal<HTMLDivElement>([]);
@@ -61,7 +63,7 @@ export default function PlacementsPage() {
               : t("placements.subtitle")}
           </p>
         </div>
-        <Button size="sm" className="ml-auto gap-1.5">
+        <Button size="sm" className="ml-auto gap-1.5" onClick={() => setNewOpen(true)}>
           <Send className="size-3.5" /> {t("placements.new")}
         </Button>
       </div>
@@ -268,6 +270,7 @@ export default function PlacementsPage() {
         </ScrollArea>
       </div>
       )}
+      <NewPlacementDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
