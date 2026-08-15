@@ -39,19 +39,22 @@ on conflict (id) do nothing;
 -- ---------------------------------------------------------------------------
 -- Demo roster — one user per role the merged platform produces.
 -- ---------------------------------------------------------------------------
-insert into app_user (id, org_id, email, name, initials, title, base_role, read_only, bind_authority, branch_id) values
-  ('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000a1', 'aisyah.rahman@demo.nxtloom.com',  'Aisyah Rahman',   'AR', 'Claims Processor',    'servicer',  false, null,        '00000000-0000-0000-0000-0000000000b2'),
-  ('00000000-0000-0000-0000-0000000000c2', '00000000-0000-0000-0000-0000000000a1', 'minh.nguyen@demo.nxtloom.com',    'Nguyen Van Minh', 'NM', 'Underwriter',         'servicer',  false, 500000000,   '00000000-0000-0000-0000-0000000000b7'),
-  ('00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 'sarah.chen@demo.nxtloom.com',     'Sarah Chen',      'SC', 'Operations Manager',  'servicer',  false, null,        '00000000-0000-0000-0000-0000000000b1'),
-  ('00000000-0000-0000-0000-0000000000c4', '00000000-0000-0000-0000-0000000000a1', 'rizky.pratama@demo.nxtloom.com',  'Rizky Pratama',   'RP', 'Automation Engineer', 'builder',   false, null,        '00000000-0000-0000-0000-0000000000b4'),
-  ('00000000-0000-0000-0000-0000000000c5', '00000000-0000-0000-0000-0000000000a1', 'somchai.w@demo.nxtloom.com',      'Somchai Wattana', 'SW', 'Compliance Officer',  'oversight', true,  null,        '00000000-0000-0000-0000-0000000000b6'),
-  ('00000000-0000-0000-0000-0000000000c6', '00000000-0000-0000-0000-0000000000a1', 'priya.kumar@demo.nxtloom.com',    'Priya Kumar',     'PK', 'Org Administrator',   'admin',     false, null,        '00000000-0000-0000-0000-0000000000b1')
+insert into app_user (id, org_id, email, name, initials, title, base_role, read_only, bind_authority, branch_id, external_firm, external_handle) values
+  ('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000a1', 'aisyah.rahman@demo.nxtloom.com',  'Aisyah Rahman',   'AR', 'Claims Processor',    'servicer',  false, null,        '00000000-0000-0000-0000-0000000000b2', null, null),
+  ('00000000-0000-0000-0000-0000000000c2', '00000000-0000-0000-0000-0000000000a1', 'minh.nguyen@demo.nxtloom.com',    'Nguyen Van Minh', 'NM', 'Underwriter',         'servicer',  false, 500000000,   '00000000-0000-0000-0000-0000000000b7', null, null),
+  ('00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 'sarah.chen@demo.nxtloom.com',     'Sarah Chen',      'SC', 'Operations Manager',  'servicer',  false, null,        '00000000-0000-0000-0000-0000000000b1', null, null),
+  ('00000000-0000-0000-0000-0000000000c4', '00000000-0000-0000-0000-0000000000a1', 'rizky.pratama@demo.nxtloom.com',  'Rizky Pratama',   'RP', 'Automation Engineer', 'builder',   false, null,        '00000000-0000-0000-0000-0000000000b4', null, null),
+  ('00000000-0000-0000-0000-0000000000c5', '00000000-0000-0000-0000-0000000000a1', 'somchai.w@demo.nxtloom.com',      'Somchai Wattana', 'SW', 'Compliance Officer',  'oversight', true,  null,        '00000000-0000-0000-0000-0000000000b6', null, null),
+  ('00000000-0000-0000-0000-0000000000c6', '00000000-0000-0000-0000-0000000000a1', 'andrew@demo.nxtloom.com',         'Andrew',          'A',  'Org Administrator',   'admin',     false, null,        '00000000-0000-0000-0000-0000000000b1', null, null),
+  ('00000000-0000-0000-0000-0000000000c7', '00000000-0000-0000-0000-0000000000a1', 'weijie.lim@demo.nxtloom.com',     'Lim Wei Jie',     'LW', 'Placement Specialist','producer',  false, null,        '00000000-0000-0000-0000-0000000000b3', null, null),
+  ('00000000-0000-0000-0000-0000000000c8', '00000000-0000-0000-0000-0000000000a1', 'farah.idris@meridianrisk.com',    'Farah Idris',     'FI', 'Broker',              'producer',  false, null,        null,                                   'Meridian Risk Partners', 'Umar Macarilay')
 on conflict (id) do nothing;
 
 -- Market scope, per user.
 insert into user_market (user_id, market_code) values
   ('00000000-0000-0000-0000-0000000000c1', 'MY'),
   ('00000000-0000-0000-0000-0000000000c2', 'VN'),
+  ('00000000-0000-0000-0000-0000000000c2', 'ID'),
   ('00000000-0000-0000-0000-0000000000c3', 'SG'),
   ('00000000-0000-0000-0000-0000000000c3', 'MY'),
   ('00000000-0000-0000-0000-0000000000c4', 'ID'),
@@ -68,7 +71,12 @@ insert into user_market (user_id, market_code) values
   ('00000000-0000-0000-0000-0000000000c6', 'ID'),
   ('00000000-0000-0000-0000-0000000000c6', 'TH'),
   ('00000000-0000-0000-0000-0000000000c6', 'VN'),
-  ('00000000-0000-0000-0000-0000000000c6', 'PH')
+  ('00000000-0000-0000-0000-0000000000c6', 'PH'),
+  ('00000000-0000-0000-0000-0000000000c7', 'SG'),
+  ('00000000-0000-0000-0000-0000000000c7', 'MY'),
+  ('00000000-0000-0000-0000-0000000000c7', 'ID'),
+  ('00000000-0000-0000-0000-0000000000c8', 'ID'),
+  ('00000000-0000-0000-0000-0000000000c8', 'MY')
 on conflict do nothing;
 
 -- Capability grants. Note the compliance officer holds only audit.read: an
@@ -85,5 +93,6 @@ insert into user_capability (user_id, capability) values
   ('00000000-0000-0000-0000-0000000000c5', 'audit.read'),
   ('00000000-0000-0000-0000-0000000000c6', 'admin.org'),
   ('00000000-0000-0000-0000-0000000000c6', 'product.edit'),
-  ('00000000-0000-0000-0000-0000000000c6', 'flow.edit')
+  ('00000000-0000-0000-0000-0000000000c6', 'flow.edit'),
+  ('00000000-0000-0000-0000-0000000000c7', 'placement.bind')
 on conflict do nothing;

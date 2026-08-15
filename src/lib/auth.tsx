@@ -168,8 +168,8 @@ export const demoUsers: User[] = [
   },
   {
     id: "u_admin",
-    name: "Priya Kumar",
-    initials: "PK",
+    name: "Andrew",
+    initials: "A",
     title: "Org Administrator",
     base: "admin",
     markets: ["SG", "MY", "ID", "TH", "VN", "PH"],

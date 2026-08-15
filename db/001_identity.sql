@@ -94,9 +94,20 @@ create table if not exists app_user (
   read_only      boolean not null default false,
   bind_authority numeric(18,2),
   branch_id      uuid references branch(id) on delete set null,
+  -- External party working with this tenant rather than inside it. A boundary,
+  -- not a permission level: rows are visible to them only where they are named.
+  -- Whether a broker is internal or external depends on who the tenant is, so
+  -- it is stated per user rather than inferred from base_role.
+  external_firm   text,
+  external_handle text,
   status         text not null default 'active' check (status in ('active','suspended')),
   created_at     timestamptz not null default now(),
-  unique (org_id, email)
+  unique (org_id, email),
+  -- Both halves or neither; a firm with no handle matches no records.
+  constraint external_pair check (
+    (external_firm is null and external_handle is null)
+    or (external_firm is not null and external_handle is not null)
+  )
 );
 
 -- Market scope. Absence of a row is absence of access — there is no wildcard.
