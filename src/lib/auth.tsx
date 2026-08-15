@@ -40,7 +40,13 @@ export type User = {
   markets: MarketCode[];
   branch?: string;
   capabilities: Capability[];
-  /** Bind authority in the user's own market currency. Undefined means none. */
+  /**
+   * Largest premium this user may bind without referral.
+   *
+   * Held as a bare number, which is only correct while a user works in one
+   * currency. A regional underwriter covering IDR and VND needs either a limit
+   * per market or conversion at a stated rate — noted rather than solved.
+   */
   bindAuthority?: number;
   /** Oversight roles read everything and write nothing, by design. */
   readOnly?: boolean;
@@ -54,6 +60,26 @@ const navByRole: Record<BaseRole, string[]> = {
   builder:   ["/flows", "/products", "/runs", "/items"],
   oversight: ["/runs", "/items", "/insights", "/settings"],
   admin:     ["/products", "/flows", "/placements", "/runs", "/items", "/insights", "/settings"],
+};
+
+/**
+ * Screens a capability implies.
+ *
+ * A grant that cannot be reached is not a grant: the underwriter held
+ * placement.bind while their base role had no route to Placements, so the
+ * authority limit could never be exercised. Routes are the union of the base
+ * role's set and whatever the user's own grants require.
+ */
+const routeForCapability: Partial<Record<Capability, string[]>> = {
+  "placement.bind": ["/placements"],
+  "product.edit": ["/products"],
+  "flow.edit": ["/flows"],
+  "flow.publish": ["/flows"],
+  "item.review": ["/items"],
+  "item.override": ["/items"],
+  "run.manage": ["/runs"],
+  "audit.read": ["/runs", "/insights"],
+  "admin.org": ["/settings"],
 };
 
 export const demoUsers: User[] = [
@@ -73,10 +99,23 @@ export const demoUsers: User[] = [
     initials: "NM",
     title: "Underwriter",
     base: "servicer",
-    markets: ["VN"],
+    markets: ["VN", "ID"],
     branch: "Ho Chi Minh City",
     capabilities: ["item.review", "item.override", "placement.bind"],
     bindAuthority: 500_000_000,
+  },
+  {
+    // Senior placement authority, so the bind path is reachable at all — the
+    // underwriter's limit demonstrates referral, but somebody has to be able to
+    // say yes or the workflow has no end.
+    id: "u_placement",
+    name: "Lim Wei Jie",
+    initials: "LW",
+    title: "Placement Specialist",
+    base: "producer",
+    markets: ["SG", "MY", "ID"],
+    branch: "Penang",
+    capabilities: ["placement.bind"],
   },
   {
     id: "u_opsmanager",
@@ -169,7 +208,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (user.readOnly && writeCaps.has(cap)) return false;
         return user.capabilities.includes(cap);
       },
-      allowedRoutes: user ? navByRole[user.base] : [],
+      allowedRoutes: user
+        ? Array.from(
+            new Set([
+              ...navByRole[user.base],
+              ...user.capabilities.flatMap((c) => routeForCapability[c] ?? []),
+            ])
+          )
+        : [],
       allowedMarkets: user?.markets ?? [],
     }),
     [user]

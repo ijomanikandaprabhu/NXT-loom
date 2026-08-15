@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { AlertTriangle, Check, Send, Sparkles, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BindAction } from "@/components/placements/bind-action";
+import { usePlacements } from "@/lib/placements-store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { type QuoteStatus } from "@/data/placements";
@@ -37,6 +39,7 @@ const kpiTone = {
 export default function PlacementsPage() {
   const { t, money, moneyCompact } = useI18n();
   const { placements, placementKpis } = useMarketData();
+  const { chase, eventsFor } = usePlacements();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = placements.find((p) => p.id === selectedId) ?? placements[0];
   const listRef = useStaggerReveal<HTMLDivElement>([]);
@@ -119,8 +122,14 @@ export default function PlacementsPage() {
                 </p>
               </div>
               <div className="ml-auto flex gap-2">
-                <Button variant="outline" size="sm">Chase carriers</Button>
-                <Button size="sm">Issue comparison</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={selected.quotes.every((q) => q.status !== "Pending")}
+                  onClick={() => chase(selected.id)}
+                >
+                  Chase carriers
+                </Button>
               </div>
             </div>
 
@@ -222,10 +231,34 @@ export default function PlacementsPage() {
                         ))}
                       </div>
                     )}
+
+                    <BindAction placement={selected} quote={q} />
                   </div>
                 );
               })}
             </div>
+
+            {eventsFor(selected.id).length > 0 && (
+              <>
+                <h3 className="text-[13.5px] font-bold mt-6 mb-2.5">Activity</h3>
+                <ol className="space-y-1.5">
+                  {eventsFor(selected.id).map((e, i) => (
+                    <li key={i} className="text-[11.5px] text-muted-foreground">
+                      <span className="font-semibold text-foreground">{e.actorName}</span>{" "}
+                      {e.action === "bound" && <>bound with {e.carrier}</>}
+                      {e.action === "referred" && <>referred {e.carrier} for approval</>}
+                      {e.action === "chased" && <>chased carriers — {e.note}</>}
+                      <span className="ml-1.5 font-mono text-[10px]">
+                        {new Date(e.at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                      </span>
+                      {e.action === "referred" && e.note && (
+                        <p className="mt-0.5 border-l-2 border-border pl-2">{e.note}</p>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
           </div>
           )}
         </ScrollArea>

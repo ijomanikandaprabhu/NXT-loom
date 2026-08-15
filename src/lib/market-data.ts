@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useOrg } from "@/lib/org-store";
 import { moneyCompact as fmtCompact } from "@/data/locale";
-import { placements } from "@/data/placements";
+import { usePlacements } from "@/lib/placements-store";
 import { useProducts } from "@/lib/products-store";
 import { flows } from "@/data/flows";
 import { runs } from "@/data/runs";
@@ -26,6 +26,7 @@ export function useMarketData() {
   // together — numbers that disagree with the rows below them read as a bug.
   const { items: allItems } = useItems();
   const { products } = useProducts();
+  const { placements } = usePlacements();
   const info = marketFor(market) ?? markets[0];
 
   return useMemo(() => {
@@ -130,5 +131,5 @@ export function useMarketData() {
       agentPerf: scopedAgentPerf,
       reviewers,
     };
-  }, [market, info, allItems, products]);
+  }, [market, info, allItems, products, placements]);
 }
