@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { useOrg } from "@/lib/org-store";
 import { emptyProduct, useProducts, type ProductDraft } from "@/lib/products-store";
+import { ProductAssistant } from "@/components/products/product-assistant";
 import type { Line, Plan, Product } from "@/data/products";
 import { cn } from "@/lib/utils";
 
@@ -167,6 +168,18 @@ export default function ProductEditorPage() {
               ))}
             </ul>
           </div>
+        )}
+
+        {!existing && (
+          <ProductAssistant
+            market={market}
+            currency={currency}
+            draftId={draft.id}
+            onApply={(d) => {
+              setDraft(d);
+              setTouched(true);
+            }}
+          />
         )}
 
         <Section title="Identity">

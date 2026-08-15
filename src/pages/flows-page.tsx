@@ -4,6 +4,7 @@ import { Search, Sparkles, Plus, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { FlowAssistantDialog } from "@/components/flows/flow-assistant-dialog";
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import { useI18n } from "@/lib/i18n";
 const tabs = ["All", "Active", "Inactive"] as const;
 
 export default function FlowsPage() {
+  const [assistOpen, setAssistOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useI18n();
   const { flows } = useMarketData();
@@ -50,7 +52,7 @@ export default function FlowsPage() {
               {flows.length} Flows
             </span>
             <div className="ml-auto flex gap-2">
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setAssistOpen(true)}>
                 <Sparkles className="size-3.5" /> Build with AI Agent
               </Button>
               <Button size="sm" className="gap-1.5">
@@ -146,6 +148,8 @@ export default function FlowsPage() {
           </div>
         </div>
       </div>
+
+      <FlowAssistantDialog open={assistOpen} onOpenChange={setAssistOpen} />
     </div>
   );
 }
