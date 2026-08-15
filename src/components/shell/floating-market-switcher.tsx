@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useOrg } from "@/lib/org-store";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,8 +18,14 @@ import { cn } from "@/lib/utils";
  */
 export function FloatingMarketSwitcher() {
   const { market, setMarket, t } = useI18n();
-  const { markets, marketFor, branchesFor } = useOrg();
-  const active = marketFor(market) ?? markets[0];
+  const { markets: allMarkets, marketFor, branchesFor } = useOrg();
+  const { allowedMarkets } = useAuth();
+  // Scope is the user's, not the page's. A market absent here is not merely
+  // hidden — there is no way to select it.
+  const markets = allowedMarkets.length
+    ? allMarkets.filter((m) => allowedMarkets.includes(m.code))
+    : allMarkets;
+  const active = marketFor(market) ?? markets[0] ?? allMarkets[0];
 
   return (
     <div
@@ -54,6 +61,11 @@ export function FloatingMarketSwitcher() {
             <Globe className="size-3" /> {t("shell.market")}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {markets.length === 1 && (
+            <div className="px-2 py-1.5 text-[10.5px] text-muted-foreground">
+              Your role is scoped to a single market.
+            </div>
+          )}
           {markets.map((m) => (
             <DropdownMenuItem
               key={m.code}

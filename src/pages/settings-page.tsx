@@ -24,6 +24,7 @@ import {
   type VarScope,
 } from "@/data/settings-data";
 import { useOrg } from "@/lib/org-store";
+import { useReadOnly } from "@/lib/auth";
 import { AddMarketDialog } from "@/components/admin/add-market-dialog";
 import { AddBranchDialog } from "@/components/admin/add-branch-dialog";
 import { Trash2, Building2 } from "lucide-react";
@@ -76,6 +77,8 @@ const scopeTone: Record<VarScope, string> = {
 export default function SettingsPage() {
   const { t } = useI18n();
   const { markets, customMarkets, branches, branchesFor, removeMarket, removeBranch, marketFor } = useOrg();
+  // Oversight roles read the configuration and change none of it.
+  const readOnly = useReadOnly();
   const [userQuery, setUserQuery] = useState("");
   const [env, setEnv] = useState<"prod" | "staging">("prod");
   const [scopeFilter, setScopeFilter] = useState<"All Scopes" | VarScope>("All Scopes");
@@ -192,7 +195,7 @@ export default function SettingsPage() {
                 <span className="text-[11px] font-semibold text-muted-foreground bg-secondary border rounded-full px-2 py-0.5">
                   {markets.length} markets · {customMarkets.length} custom
                 </span>
-                <div className="ml-auto"><AddMarketDialog /></div>
+                <div className="ml-auto">{!readOnly && <AddMarketDialog />}</div>
               </div>
               <p className="px-5 py-3 text-[12.5px] text-muted-foreground border-b">
                 Where each market stores and processes personal data. Branches map to exactly one
@@ -250,7 +253,13 @@ export default function SettingsPage() {
                         {branchesFor(m.code).length}
                       </TableCell>
                       <TableCell>
-                        {"custom" in m ? (
+                        {/* Origin and permission are separate facts: a custom market
+                            stays custom even for a role that may not delete it. */}
+                        {!("custom" in m) ? (
+                          <span className="text-[10px] text-muted-foreground">seed</span>
+                        ) : readOnly ? (
+                          <span className="text-[10px] text-muted-foreground">custom</span>
+                        ) : (
                           <button
                             onClick={() => removeMarket(m.code)}
                             title="Remove market and its branches"
@@ -258,8 +267,6 @@ export default function SettingsPage() {
                           >
                             <Trash2 className="size-3.5" />
                           </button>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground">seed</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -277,7 +284,7 @@ export default function SettingsPage() {
                 <span className="text-[11px] font-semibold text-muted-foreground bg-secondary border rounded-full px-2 py-0.5">
                   {branches.length} branches across {new Set(branches.map((b) => b.marketCode)).size} markets
                 </span>
-                <div className="ml-auto"><AddBranchDialog /></div>
+                <div className="ml-auto">{!readOnly && <AddBranchDialog />}</div>
               </div>
               <p className="px-5 py-3 text-[12.5px] text-muted-foreground border-b">
                 Each branch reports into one market and inherits its currency, regulator, and data
@@ -354,13 +361,15 @@ export default function SettingsPage() {
                         </TableCell>
                         <TableCell className="text-[12.5px]">{b.manager}</TableCell>
                         <TableCell>
-                          <button
-                            onClick={() => removeBranch(b.id)}
-                            title="Remove branch"
-                            className="size-7 rounded-md flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
+                          {!readOnly && (
+                            <button
+                              onClick={() => removeBranch(b.id)}
+                              title="Remove branch"
+                              className="size-7 rounded-md flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -616,7 +625,7 @@ export default function SettingsPage() {
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-success bg-success/10 border border-success/25 rounded-full px-2.5 py-1">
                   <ShieldCheck className="size-3" /> End-to-end encryption ready
                 </span>
-                <Button size="sm" className="ml-auto gap-1.5">
+                <Button size="sm" className="ml-auto gap-1.5" disabled={readOnly}>
                   <Plus className="size-3.5" /> Add variable
                 </Button>
               </div>
@@ -715,6 +724,7 @@ function Panel({
   search?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const readOnly = useReadOnly();
   return (
     <div className="border rounded-xl bg-card overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-4 border-b flex-wrap">
@@ -724,7 +734,7 @@ function Panel({
         </span>
         <div className="ml-auto flex items-center gap-2.5">
           {search}
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" disabled={readOnly}>
             <Plus className="size-3.5" /> {action}
           </Button>
         </div>

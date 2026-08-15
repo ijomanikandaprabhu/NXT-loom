@@ -1,12 +1,20 @@
-import { Link, useLocation } from "react-router-dom";
-import { Bell, Sparkles } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Bell, Eye, LogOut, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { navItems } from "./nav-items";
 import { LanguageSwitcher } from "./locale-switcher";
 
-const groups = ["Build", "Run", "Govern"] as const;
 const groupKey = { Build: "group.build", Run: "group.run", Govern: "group.govern" } as const;
 const navKey: Record<string, string> = {
   "/products": "nav.products",
@@ -21,6 +29,15 @@ const navKey: Record<string, string> = {
 export function AppTopbar() {
   const location = useLocation();
   const { t } = useI18n();
+  const { user, allowedRoutes, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  // Hide what the role cannot reach. RequireAuth still refuses a typed URL —
+  // this only keeps the bar honest about what is actually available.
+  const visible = navItems.filter((n) => allowedRoutes.includes(n.href));
+  const groups = (["Build", "Run", "Govern"] as const).filter((g) =>
+    visible.some((n) => n.group === g)
+  );
 
   return (
     <header className="h-14 shrink-0 border-b bg-card flex items-center gap-5 px-5">
@@ -49,7 +66,7 @@ export function AppTopbar() {
             <span className="text-[9.5px] font-bold uppercase tracking-wider text-muted-foreground/60 mr-1.5">
               {t(groupKey[g])}
             </span>
-            {navItems
+            {visible
               .filter((n) => n.group === g)
               .map((item) => {
                 const active = location.pathname.startsWith(item.href);
@@ -85,11 +102,51 @@ export function AppTopbar() {
         <Bell className="size-[18px]" />
       </button>
 
-      <Avatar className="size-7 cursor-pointer">
-        <AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-bold">
-          SC
-        </AvatarFallback>
-      </Avatar>
+      {user && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 cursor-pointer rounded-full hover:bg-secondary/60 transition-colors pl-2 pr-1 py-1">
+              {user.readOnly && (
+                <span
+                  className="inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 bg-warning/15 text-warning"
+                  title="This role can read everything and change nothing"
+                >
+                  <Eye className="size-2.5" /> read-only
+                </span>
+              )}
+              <Avatar className="size-7">
+                <AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-bold">
+                  {user.initials}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[224px]">
+            <DropdownMenuLabel className="pb-1">
+              <div className="text-[12.5px] font-semibold leading-tight">{user.name}</div>
+              <div className="text-[11px] font-normal text-muted-foreground">{user.title}</div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <div className="px-2 py-1.5 text-[10.5px] text-muted-foreground leading-snug">
+              <span className="uppercase tracking-wide font-bold">{user.base}</span>
+              {user.branch && <> · {user.branch}</>}
+              <div className="mt-0.5">
+                {user.markets.length === 6 ? "All markets" : user.markets.join(", ")}
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer gap-2"
+              onClick={() => {
+                signOut();
+                navigate("/login", { replace: true });
+              }}
+            >
+              <LogOut className="size-3.5" /> Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </header>
   );
 }

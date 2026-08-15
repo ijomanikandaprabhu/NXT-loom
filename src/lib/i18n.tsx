@@ -6,6 +6,7 @@ import {
   type CurrencyCode,
 } from "@/data/locale";
 import { useOrg } from "@/lib/org-store";
+import { useAuth } from "@/lib/auth";
 
 export type LangCode = "en" | "id" | "ms" | "th" | "vi" | "fil";
 
@@ -382,6 +383,7 @@ const STORE_LANG = "nxtloom.lang";
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const { markets, marketFor, money: orgMoney } = useOrg();
+  const { allowedMarkets } = useAuth();
   const [market, setMarketState] = useState<MarketCode>(() => {
     const saved = localStorage.getItem(STORE_MARKET) as MarketCode | null;
     return saved ?? "SG";
@@ -407,6 +409,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     const current = languages.find((l) => l.code === lang);
     if (!current?.markets.includes(m)) setLangState(defaultLangFor[m] ?? "en");
   };
+
+  // A persisted market can outlive the session that was allowed to see it, so
+  // signing in as someone with narrower scope has to pull the selection back.
+  useEffect(() => {
+    if (allowedMarkets.length && !allowedMarkets.includes(market)) {
+      setMarket(allowedMarkets[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowedMarkets, market]);
 
   const value = useMemo<I18nValue>(() => {
     const active = marketFor(market) ?? markets[0];

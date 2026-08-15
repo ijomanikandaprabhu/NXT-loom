@@ -13,6 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { conversations, type Conversation } from "@/data/conversations";
+import { useAuth } from "@/lib/auth";
 
 const chips = [
   { icon: ClipboardList, label: "Items processed yesterday?" },
@@ -43,6 +44,7 @@ function RichText({ text }: { text: string }) {
 }
 
 export default function AssistantPage() {
+  const { user } = useAuth();
   const [value, setValue] = useState("");
   const [active, setActive] = useState<Conversation | null>(null);
 
@@ -136,7 +138,9 @@ export default function AssistantPage() {
           <div className="relative flex-1 flex flex-col items-center justify-center px-6 min-h-0">
             <div className="w-full max-w-[600px] text-center -mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <LoomMark className="mx-auto mb-6" />
-              <h1 className="text-[27px] font-bold tracking-tight text-balance">Good evening, Sarah,</h1>
+              <h1 className="text-[27px] font-bold tracking-tight text-balance">
+                Good evening, {user?.name.split(" ")[0] ?? "there"},
+              </h1>
               <p className="text-muted-foreground text-[14px] mt-1.5">
                 How can I help with your work today?
               </p>
