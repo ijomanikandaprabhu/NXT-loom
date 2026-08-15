@@ -54,6 +54,8 @@ type OrgValue = {
   addBranch: (b: Omit<Branch, "id" | "createdAt">) => void;
   removeBranch: (id: string) => void;
   branchesFor: (code: string) => Branch[];
+  /** Drops admin-created markets and restores the seed branch list. */
+  resetOrg: () => void;
   marketFor: (code: string) => AnyMarket | undefined;
   /** Formats money for any market, including admin-created currencies. */
   money: (amount: number, marketCode: string) => string;
@@ -98,7 +100,11 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
       customMarkets,
       branches,
       marketFor,
-      branchesFor: (code) => branches.filter((b) => b.marketCode === code),
+      resetOrg: () => {
+      setCustomMarkets([]);
+      setBranches(seedBranches);
+    },
+    branchesFor: (code) => branches.filter((b) => b.marketCode === code),
       addMarket: (m) => setCustomMarkets((prev) => [...prev, m]),
       removeMarket: (code) => {
         setCustomMarkets((prev) => prev.filter((m) => m.code !== code));

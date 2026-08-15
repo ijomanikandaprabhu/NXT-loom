@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Eye, LogOut, Sparkles } from "lucide-react";
+import { Bell, Eye, LogOut, RotateCcw, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
+import { ResetDemo } from "./reset-demo";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { navItems } from "./nav-items";
@@ -31,6 +33,7 @@ export function AppTopbar() {
   const { t } = useI18n();
   const { user, allowedRoutes, signOut } = useAuth();
   const navigate = useNavigate();
+  const [resetOpen, setResetOpen] = useState(false);
 
   // Hide what the role cannot reach. RequireAuth still refuses a typed URL —
   // this only keeps the bar honest about what is actually available.
@@ -135,6 +138,10 @@ export function AppTopbar() {
               </div>
             </div>
             <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer gap-2" onClick={() => setResetOpen(true)}>
+              <RotateCcw className="size-3.5" /> Reset demo data
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer gap-2"
               onClick={() => {
@@ -147,6 +154,7 @@ export function AppTopbar() {
           </DropdownMenuContent>
         </DropdownMenu>
       )}
+      <ResetDemo open={resetOpen} onOpenChange={setResetOpen} />
     </header>
   );
 }
