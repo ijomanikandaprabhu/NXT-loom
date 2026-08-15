@@ -6,7 +6,8 @@ import { placements } from "@/data/placements";
 import { products } from "@/data/products";
 import { flows } from "@/data/flows";
 import { runs } from "@/data/runs";
-import { workItems, kpisForMarket } from "@/data/work-items";
+import { kpisForMarket } from "@/data/work-items";
+import { useItems } from "@/lib/items-store";
 import { agents, workspaces, integrations, variables } from "@/data/settings-data";
 import { byLine, agentPerf, headline, reviewers } from "@/data/insights-data";
 
@@ -21,6 +22,9 @@ export function useMarketData() {
   // currency and regulator. The seed lookup fell back to Singapore for them,
   // which quietly relabelled every figure on the page.
   const { markets, marketFor } = useOrg();
+  // Read through the store so a review decision moves the list and the KPIs
+  // together — numbers that disagree with the rows below them read as a bug.
+  const { items: allItems } = useItems();
   const info = marketFor(market) ?? markets[0];
 
   return useMemo(() => {
@@ -29,7 +33,7 @@ export function useMarketData() {
     const scopedProducts = products.filter((p) => p.markets.includes(market));
     const scopedFlows = flows.filter((f) => !f.markets || f.markets.includes(market));
     const scopedRuns = runs.filter((r) => r.market === market);
-    const scopedItems = workItems.filter((i) => i.market === market);
+    const scopedItems = allItems.filter((i) => i.market === market);
 
     // Lines of business actually sold in this market drive the analytics split.
     const linesHere = new Set(scopedProducts.map((p) => p.line));
@@ -125,5 +129,5 @@ export function useMarketData() {
       agentPerf: scopedAgentPerf,
       reviewers,
     };
-  }, [market, info]);
+  }, [market, info, allItems]);
 }

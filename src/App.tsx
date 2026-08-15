@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { OrgProvider } from "@/lib/org-store";
 import { AuthProvider } from "@/lib/auth";
+import { ItemsProvider } from "@/lib/items-store";
 import { RequireAuth } from "@/components/shell/require-auth";
 import LoginPage from "@/pages/login-page";
 import { AppLayout } from "@/components/shell/app-layout";
@@ -21,6 +22,7 @@ const SettingsPage = lazy(() => import("@/pages/settings-page"));
 export default function App() {
   return (
     <AuthProvider>
+      <ItemsProvider>
       <OrgProvider>
       <I18nProvider>
         <TooltipProvider delayDuration={200}>
@@ -48,6 +50,7 @@ export default function App() {
         </TooltipProvider>
       </I18nProvider>
       </OrgProvider>
+      </ItemsProvider>
     </AuthProvider>
   );
 }

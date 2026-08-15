@@ -23,7 +23,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
-import { workItems } from "@/data/work-items";
+import { useItems } from "@/lib/items-store";
+import { ReviewActions } from "@/components/items/review-actions";
+import { ActivityTrail } from "@/components/items/activity-trail";
 import { itemDetails, genericDetail, type ItemDetail } from "@/data/item-details";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +46,8 @@ const insightTone = {
 export default function ItemDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const item = workItems.find((w) => w.id === id);
+  const { items } = useItems();
+  const item = items.find((w) => w.id === id);
   const [tab, setTab] = useState<"insights" | "review">("insights");
 
   const detail: ItemDetail | null = useMemo(() => {
@@ -84,11 +87,17 @@ export default function ItemDetailPage() {
               <span className="text-[11.5px] font-semibold text-muted-foreground">{detail.completion}% complete</span>
             </div>
           )}
-          <div className="ml-auto flex gap-2">
-            <Button variant="outline" size="sm">Save</Button>
-            <Button size="sm" className="gap-1.5"><Send className="size-3.5" /> Submit</Button>
+          <div className="ml-auto">
+            <ReviewActions item={item} />
           </div>
         </div>
+
+        <section className="mt-5 rounded-lg border bg-card p-4">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
+            Decision history
+          </h2>
+          <ActivityTrail itemId={item.id} />
+        </section>
 
         <div className="grid grid-cols-2 border rounded-lg overflow-hidden mt-5 max-w-[560px]">
           {(["insights", "review"] as const).map((t, i) => (
