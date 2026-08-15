@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
@@ -6,16 +7,16 @@ import { AuthProvider } from "@/lib/auth";
 import { RequireAuth } from "@/components/shell/require-auth";
 import LoginPage from "@/pages/login-page";
 import { AppLayout } from "@/components/shell/app-layout";
-import AssistantPage from "@/pages/assistant-page";
-import ProductsPage from "@/pages/products-page";
-import FlowsPage from "@/pages/flows-page";
-import FlowStudioPage from "@/pages/flow-studio-page";
-import PlacementsPage from "@/pages/placements-page";
-import RunsPage from "@/pages/runs-page";
-import ItemsPage from "@/pages/items-page";
-import ItemDetailPage from "@/pages/item-detail-page";
-import InsightsPage from "@/pages/insights-page";
-import SettingsPage from "@/pages/settings-page";
+const AssistantPage = lazy(() => import("@/pages/assistant-page"));
+const ProductsPage = lazy(() => import("@/pages/products-page"));
+const FlowsPage = lazy(() => import("@/pages/flows-page"));
+const FlowStudioPage = lazy(() => import("@/pages/flow-studio-page"));
+const PlacementsPage = lazy(() => import("@/pages/placements-page"));
+const RunsPage = lazy(() => import("@/pages/runs-page"));
+const ItemsPage = lazy(() => import("@/pages/items-page"));
+const ItemDetailPage = lazy(() => import("@/pages/item-detail-page"));
+const InsightsPage = lazy(() => import("@/pages/insights-page"));
+const SettingsPage = lazy(() => import("@/pages/settings-page"));
 
 export default function App() {
   return (
