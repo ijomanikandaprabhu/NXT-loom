@@ -22,7 +22,16 @@ const kindStyles: Record<NodeKind, { icon: typeof Mail; color: string; bg: strin
   group: { icon: Code2, color: "text-muted-foreground", bg: "bg-muted" },
 };
 
+const runRing: Record<string, string> = {
+  running: "ring-2 ring-info ring-offset-1 animate-pulse",
+  succeeded: "ring-2 ring-success/70 ring-offset-1",
+  failed: "ring-2 ring-destructive ring-offset-1",
+  waiting: "ring-2 ring-warning ring-offset-1",
+  skipped: "opacity-50",
+};
+
 export function FlowNode({ data, selected }: NodeProps & { data: FlowNodeData }) {
+  const runStatus = data.runStatus as string | undefined;
   if (data.kind === "code" && data.subtitle === "for each · body") {
     return (
       <div className="text-[10.5px] font-bold text-muted-foreground/70 uppercase tracking-wide">
@@ -37,8 +46,9 @@ export function FlowNode({ data, selected }: NodeProps & { data: FlowNodeData })
   return (
     <div
       className={cn(
-        "w-[168px] rounded-lg border bg-card shadow-sm overflow-hidden text-left",
-        selected && "ring-2 ring-primary ring-offset-1"
+        "w-[168px] rounded-lg border bg-card shadow-sm overflow-hidden text-left transition-all",
+        selected && "ring-2 ring-primary ring-offset-1",
+        runStatus && runRing[runStatus]
       )}
     >
       <Handle type="target" position={Position.Left} className="!bg-border !border-none !size-2" />
