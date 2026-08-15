@@ -23,13 +23,17 @@ import {
   type UserStatus,
   type VarScope,
 } from "@/data/settings-data";
-import { markets } from "@/data/locale";
+import { useOrg } from "@/lib/org-store";
+import { AddMarketDialog } from "@/components/admin/add-market-dialog";
+import { AddBranchDialog } from "@/components/admin/add-branch-dialog";
+import { Trash2, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { v: "workspaces", label: "Workspaces" },
-  { v: "markets", label: "Markets & Residency" },
+  { v: "markets", label: "Markets" },
+  { v: "branches", label: "Branches" },
   { v: "agents", label: "AI Agents" },
   { v: "integrations", label: "Integrations" },
   { v: "users", label: "Users" },
@@ -71,6 +75,7 @@ const scopeTone: Record<VarScope, string> = {
 
 export default function SettingsPage() {
   const { t } = useI18n();
+  const { markets, customMarkets, branches, branchesFor, removeMarket, removeBranch, marketFor } = useOrg();
   const [userQuery, setUserQuery] = useState("");
   const [env, setEnv] = useState<"prod" | "staging">("prod");
   const [scopeFilter, setScopeFilter] = useState<"All Scopes" | VarScope>("All Scopes");
@@ -181,12 +186,18 @@ export default function SettingsPage() {
 
           {/* ---------- Markets & Residency ---------- */}
           <TabsContent value="markets" className="mt-5">
-            <Panel
-              title="Markets & data residency"
-              count={`${markets.length} markets`}
-              blurb="Where each market's personal data is stored and processed. Indonesia and Vietnam require in-country storage by law."
-              action="Add market"
-            >
+            <div className="border rounded-xl bg-card overflow-hidden">
+              <div className="flex items-center gap-3 px-5 py-4 border-b flex-wrap">
+                <span className="font-semibold text-[14px]">Markets &amp; data residency</span>
+                <span className="text-[11px] font-semibold text-muted-foreground bg-secondary border rounded-full px-2 py-0.5">
+                  {markets.length} markets · {customMarkets.length} custom
+                </span>
+                <div className="ml-auto"><AddMarketDialog /></div>
+              </div>
+              <p className="px-5 py-3 text-[12.5px] text-muted-foreground border-b">
+                Where each market stores and processes personal data. Branches map to exactly one
+                market and inherit its currency, regulator, and residency rules.
+              </p>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -195,7 +206,8 @@ export default function SettingsPage() {
                     <TableHead>Currency</TableHead>
                     <TableHead>Data residency</TableHead>
                     <TableHead>Privacy law</TableHead>
-                    <TableHead>Takaful</TableHead>
+                    <TableHead>Branches</TableHead>
+                    <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -234,20 +246,128 @@ export default function SettingsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-[11.5px] text-muted-foreground">{m.dataLaw}</TableCell>
+                      <TableCell className="text-[12.5px] font-semibold text-primary">
+                        {branchesFor(m.code).length}
+                      </TableCell>
                       <TableCell>
-                        {m.takaful ? (
-                          <span className="rounded-full bg-success/15 text-success px-2 py-0.5 text-[11px] font-semibold">
-                            Supported
-                          </span>
+                        {"custom" in m ? (
+                          <button
+                            onClick={() => removeMarket(m.code)}
+                            title="Remove market and its branches"
+                            className="size-7 rounded-md flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
                         ) : (
-                          <span className="text-[11.5px] text-muted-foreground">—</span>
+                          <span className="text-[10px] text-muted-foreground">seed</span>
                         )}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </Panel>
+            </div>
+          </TabsContent>
+
+          {/* ---------- Branches ---------- */}
+          <TabsContent value="branches" className="mt-5">
+            <div className="border rounded-xl bg-card overflow-hidden">
+              <div className="flex items-center gap-3 px-5 py-4 border-b flex-wrap">
+                <span className="font-semibold text-[14px]">Branches</span>
+                <span className="text-[11px] font-semibold text-muted-foreground bg-secondary border rounded-full px-2 py-0.5">
+                  {branches.length} branches across {new Set(branches.map((b) => b.marketCode)).size} markets
+                </span>
+                <div className="ml-auto"><AddBranchDialog /></div>
+              </div>
+              <p className="px-5 py-3 text-[12.5px] text-muted-foreground border-b">
+                Each branch reports into one market and inherits its currency, regulator, and data
+                residency rules.
+              </p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Branch</TableHead>
+                    <TableHead>Mapped market</TableHead>
+                    <TableHead>Inherits</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Manager</TableHead>
+                    <TableHead className="w-10" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {branches.map((b) => {
+                    const m = marketFor(b.marketCode);
+                    return (
+                      <TableRow key={b.id} className="cursor-pointer">
+                        <TableCell>
+                          <div className="text-[13px] font-semibold">{b.name}</div>
+                          <div className="text-[10.5px] text-muted-foreground font-mono mt-0.5">
+                            {b.code} · {b.city}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {m ? (
+                            <span className="inline-flex items-center gap-1.5 text-[12.5px]">
+                              {m.flag} {m.name}
+                            </span>
+                          ) : (
+                            <span className="text-[11.5px] text-destructive">Unmapped</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {m && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="rounded border px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                                {m.currency}
+                              </span>
+                              <span className="rounded border px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                                {m.regulator}
+                              </span>
+                              {m.residency === "required" && (
+                                <span className="rounded bg-destructive/15 text-destructive px-1.5 py-0.5 text-[10px] font-bold">
+                                  in-country
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                            <Building2 className="size-3" /> {b.type}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-[3px] text-[11px] font-bold",
+                              b.status === "Active"
+                                ? "bg-success/15 text-success"
+                                : b.status === "Setup"
+                                  ? "bg-warning/15 text-warning"
+                                  : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            <span className="size-1.5 rounded-full bg-current" />
+                            {b.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-[12.5px]">{b.manager}</TableCell>
+                        <TableCell>
+                          <button
+                            onClick={() => removeBranch(b.id)}
+                            title="Remove branch"
+                            className="size-7 rounded-md flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </TabsContent>
 
           {/* ---------- Integrations ---------- */}

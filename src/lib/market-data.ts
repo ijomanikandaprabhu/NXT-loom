@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useI18n } from "@/lib/i18n";
-import { marketByCode, moneyCompact as fmtCompact, type MarketCode } from "@/data/locale";
+import { marketByCode, moneyCompact as fmtCompact } from "@/data/locale";
 import { placements } from "@/data/placements";
 import { products } from "@/data/products";
 import { flows } from "@/data/flows";
@@ -78,7 +78,7 @@ export function useMarketData() {
     ];
 
     // Headline metrics shift per market — SEA maturity is genuinely uneven.
-    const maturity: Record<MarketCode, number> = {
+    const maturity: Record<string, number> = {
       SG: 1.0,
       MY: 0.96,
       TH: 0.9,
@@ -86,7 +86,7 @@ export function useMarketData() {
       VN: 0.84,
       ID: 0.82,
     };
-    const f = maturity[market];
+    const f = maturity[market] ?? 0.8;
     const scopedHeadline = headline.map((m, i) => {
       if (i === 0) return { ...m, value: `${(87.4 * f).toFixed(1)}%` };
       if (i === 1) return { ...m, value: `${(98.1 * (0.965 + f * 0.035)).toFixed(1)}%` };

@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
-  markets,
-  marketByCode,
   money as fmtMoney,
   moneyCompact as fmtMoneyCompact,
   type MarketCode,
   type CurrencyCode,
 } from "@/data/locale";
+import { useOrg } from "@/lib/org-store";
 
 export type LangCode = "en" | "id" | "ms" | "th" | "vi" | "fil";
 
@@ -28,7 +27,7 @@ export const languages: Language[] = [
 ];
 
 /** Default working language per market. */
-const defaultLangFor: Record<MarketCode, LangCode> = {
+const defaultLangFor: Record<string, LangCode> = {
   SG: "en",
   MY: "ms",
   ID: "id",
@@ -382,9 +381,10 @@ const STORE_MARKET = "nxtloom.market";
 const STORE_LANG = "nxtloom.lang";
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
+  const { markets, marketFor, money: orgMoney } = useOrg();
   const [market, setMarketState] = useState<MarketCode>(() => {
     const saved = localStorage.getItem(STORE_MARKET) as MarketCode | null;
-    return saved && markets.some((m) => m.code === saved) ? saved : "SG";
+    return saved ?? "SG";
   });
   const [lang, setLangState] = useState<LangCode>(() => {
     const saved = localStorage.getItem(STORE_LANG) as LangCode | null;
@@ -405,11 +405,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const setMarket = (m: MarketCode) => {
     setMarketState(m);
     const current = languages.find((l) => l.code === lang);
-    if (!current?.markets.includes(m)) setLangState(defaultLangFor[m]);
+    if (!current?.markets.includes(m)) setLangState(defaultLangFor[m] ?? "en");
   };
 
   const value = useMemo<I18nValue>(() => {
-    const currency = marketByCode(market).currency;
+    const active = marketFor(market) ?? markets[0];
+    const currency = active.currency;
+    const isCustom = "custom" in active;
     return {
       market,
       setMarket,
@@ -417,11 +419,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       setLang: setLangState,
       currency,
       t: (key) => dicts[lang][key] ?? en[key] ?? key,
-      money: (amount, c) => fmtMoney(amount, c ?? currency),
-      moneyCompact: (amount, c) => fmtMoneyCompact(amount, c ?? currency),
+      money: (amount, c) =>
+        c ? fmtMoney(amount, c) : isCustom ? orgMoney(amount, market) : fmtMoney(amount, currency),
+      moneyCompact: (amount, c) =>
+        c ? fmtMoneyCompact(amount, c) : isCustom ? orgMoney(amount, market) : fmtMoneyCompact(amount, currency),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [market, lang]);
+  }, [market, lang, markets]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

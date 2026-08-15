@@ -7,13 +7,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { markets, marketByCode } from "@/data/locale";
+import { useOrg } from "@/lib/org-store";
 import { languages, useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function MarketSwitcher() {
-  const { market, setMarket, currency, t } = useI18n();
-  const active = marketByCode(market);
+  const { market, setMarket, t } = useI18n();
+  const { markets, marketFor, branchesFor } = useOrg();
+  const active = marketFor(market) ?? markets[0];
 
   return (
     <DropdownMenu>
@@ -21,7 +22,7 @@ export function MarketSwitcher() {
         <button className="flex items-center gap-2 rounded-md border bg-secondary/60 pl-2.5 pr-2 py-1.5 text-[12px] text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors cursor-pointer">
           <span className="text-[13px] leading-none">{active.flag}</span>
           <span className="font-medium">{active.name}</span>
-          <span className="text-[10.5px] font-mono text-muted-foreground">{currency}</span>
+          <span className="text-[10.5px] font-mono text-muted-foreground">{active.currency}</span>
           <ChevronDown className="size-3 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
@@ -38,9 +39,16 @@ export function MarketSwitcher() {
           >
             <span className="text-[14px] leading-none">{m.flag}</span>
             <div className="min-w-0 flex-1">
-              <div className="text-[12.5px] font-medium">{m.name}</div>
+              <div className="text-[12.5px] font-medium flex items-center gap-1.5">
+                {m.name}
+                {"custom" in m && (
+                  <span className="text-[9px] font-bold uppercase tracking-wide rounded bg-info/15 text-info px-1">
+                    custom
+                  </span>
+                )}
+              </div>
               <div className="text-[10.5px] text-muted-foreground">
-                {m.regulator} · {m.currency}
+                {m.regulator} · {m.currency} · {branchesFor(m.code).length} branches
                 {m.residency === "required" && (
                   <span className="text-destructive"> · in-country data</span>
                 )}

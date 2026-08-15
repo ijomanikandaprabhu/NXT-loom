@@ -1,5 +1,8 @@
-export type MarketCode = "SG" | "MY" | "ID" | "TH" | "VN" | "PH";
-export type CurrencyCode = "SGD" | "MYR" | "IDR" | "THB" | "VND" | "PHP";
+/** The six seeded markets. Admin-created markets widen this to any string. */
+export type SeedMarketCode = "SG" | "MY" | "ID" | "TH" | "VN" | "PH";
+export type MarketCode = SeedMarketCode | (string & {});
+export type SeedCurrencyCode = "SGD" | "MYR" | "IDR" | "THB" | "VND" | "PHP";
+export type CurrencyCode = SeedCurrencyCode | (string & {});
 
 export type Market = {
   code: MarketCode;
@@ -101,7 +104,7 @@ type CurrencyRule = {
   suffix?: boolean;
 };
 
-const rules: Record<CurrencyCode, CurrencyRule> = {
+const rules: Record<string, CurrencyRule> = {
   SGD: { symbol: "S$", decimals: 2, group: ",", decimal: "." },
   MYR: { symbol: "RM", decimals: 2, group: ",", decimal: "." },
   IDR: { symbol: "Rp", decimals: 0, group: ".", decimal: "," },
@@ -116,7 +119,7 @@ const rules: Record<CurrencyCode, CurrencyRule> = {
  * a naive toLocaleString produces wrong output for both.
  */
 export function money(amount: number, currency: CurrencyCode): string {
-  const r = rules[currency];
+  const r = rules[currency] ?? { symbol: `${currency} `, decimals: 2, group: ",", decimal: "." };
   const fixed = amount.toFixed(r.decimals);
   const [whole, frac] = fixed.split(".");
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, r.group);
@@ -126,7 +129,7 @@ export function money(amount: number, currency: CurrencyCode): string {
 
 /** Compact form for dashboards — Rp 45,0 jt / ₫2,5 tỷ / S$1.2M */
 export function moneyCompact(amount: number, currency: CurrencyCode): string {
-  const r = rules[currency];
+  const r = rules[currency] ?? { symbol: `${currency} `, decimals: 2, group: ",", decimal: "." };
   if (currency === "IDR") {
     if (amount >= 1e9) return `Rp${(amount / 1e9).toFixed(1).replace(".", ",")} M`;
     if (amount >= 1e6) return `Rp${(amount / 1e6).toFixed(1).replace(".", ",")} jt`;
@@ -142,7 +145,7 @@ export function moneyCompact(amount: number, currency: CurrencyCode): string {
   return money(amount, currency);
 }
 
-export const marketByCode = (c: MarketCode) => markets.find((m) => m.code === c)!;
+export const marketByCode = (c: MarketCode) => markets.find((m) => m.code === c) ?? markets[0];
 
 /**
  * SEA name handling. Indonesian and Javanese names are frequently mononyms,
@@ -151,7 +154,7 @@ export const marketByCode = (c: MarketCode) => markets.find((m) => m.code === c)
  */
 export type NameFormat = "western" | "mononym-ok" | "family-first";
 
-export const nameFormatByMarket: Record<MarketCode, NameFormat> = {
+export const nameFormatByMarket: Record<string, NameFormat> = {
   SG: "western",
   MY: "mononym-ok",
   ID: "mononym-ok",
