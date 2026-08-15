@@ -3,7 +3,9 @@ import { AlertTriangle, Check, Send, Sparkles, TrendingDown } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
-import { placements, placementKpis, type QuoteStatus } from "@/data/placements";
+import { type QuoteStatus } from "@/data/placements";
+import { useMarketData } from "@/lib/market-data";
+import { MarketEmpty } from "@/components/shell/market-empty";
 import { marketByCode } from "@/data/locale";
 import { useI18n } from "@/lib/i18n";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
@@ -34,11 +36,12 @@ const kpiTone = {
 
 export default function PlacementsPage() {
   const { t, money, moneyCompact } = useI18n();
-  const [selectedId, setSelectedId] = useState(placements[0].id);
-  const selected = placements.find((p) => p.id === selectedId)!;
+  const { placements, placementKpis } = useMarketData();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = placements.find((p) => p.id === selectedId) ?? placements[0];
   const listRef = useStaggerReveal<HTMLDivElement>([]);
 
-  const priced = selected.quotes.filter((q) => q.premium);
+  const priced = selected?.quotes.filter((q) => q.premium) ?? [];
   const best = priced.length ? Math.min(...priced.map((q) => q.premium!)) : 0;
   const clean = priced.find((q) => q.deviations[0] === "Matches slip");
 
@@ -65,6 +68,9 @@ export default function PlacementsPage() {
         ))}
       </div>
 
+      {placements.length === 0 ? (
+        <div className="p-6"><MarketEmpty what="placements" action={t("placements.new")} /></div>
+      ) : (
       <div className="grid grid-cols-[320px_1fr] flex-1 min-h-0">
         <ScrollArea className="border-r min-h-0">
           <div ref={listRef}>
@@ -100,6 +106,7 @@ export default function PlacementsPage() {
         </ScrollArea>
 
         <ScrollArea className="min-h-0">
+          {selected && (
           <div className="px-6 py-5">
             <div className="flex items-start gap-3 flex-wrap">
               <div className="min-w-0">
@@ -125,7 +132,7 @@ export default function PlacementsPage() {
               <p className="text-[12.5px] text-muted-foreground mt-2 leading-relaxed max-w-[76ch]">
                 {selected.summary}
               </p>
-              {priced.length > 1 && clean && (
+              {priced.length > 1 && clean && clean.premium! > best ? (
                 <div className="flex items-center gap-2 mt-3 text-[11.5px] flex-wrap">
                   <span className="inline-flex items-center gap-1.5 rounded-md bg-warning/15 text-warning px-2 py-1 font-semibold">
                     <AlertTriangle className="size-3" />
@@ -136,7 +143,17 @@ export default function PlacementsPage() {
                     slip exactly.
                   </span>
                 </div>
-              )}
+              ) : priced.length > 1 && clean ? (
+                <div className="flex items-center gap-2 mt-3 text-[11.5px] flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-success/15 text-success px-2 py-1 font-semibold">
+                    <Check className="size-3" />
+                    Cheapest also matches the slip
+                  </span>
+                  <span className="text-muted-foreground">
+                    No trade-off between price and terms on this placement.
+                  </span>
+                </div>
+              ) : null}
             </div>
 
             {/* carrier comparison */}
@@ -210,8 +227,10 @@ export default function PlacementsPage() {
               })}
             </div>
           </div>
+          )}
         </ScrollArea>
       </div>
+      )}
     </div>
   );
 }

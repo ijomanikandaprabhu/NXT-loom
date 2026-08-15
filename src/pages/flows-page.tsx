@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { flows } from "@/data/flows";
+import { useMarketData } from "@/lib/market-data";
+import { MarketEmpty } from "@/components/shell/market-empty";
 import { cn } from "@/lib/utils";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
 import { useI18n } from "@/lib/i18n";
@@ -22,6 +23,7 @@ const tabs = ["All", "Active", "Inactive"] as const;
 export default function FlowsPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { flows } = useMarketData();
   const [tab, setTab] = useState<(typeof tabs)[number]>("All");
   const [query, setQuery] = useState("");
 
@@ -84,6 +86,9 @@ export default function FlowsPage() {
             </div>
           </div>
 
+          {flows.length === 0 ? (
+            <div className="p-6"><MarketEmpty what="flows" action="Create flow" /></div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -127,6 +132,7 @@ export default function FlowsPage() {
               ))}
             </TableBody>
           </Table>
+          )}
 
           <div className="flex items-center justify-between px-5 py-3 text-[12px] text-muted-foreground">
             <span>

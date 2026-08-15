@@ -3,7 +3,9 @@ import { Plus, Layers3, ShieldCheck, Globe2, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
-import { products, type Line } from "@/data/products";
+import { type Line } from "@/data/products";
+import { useMarketData } from "@/lib/market-data";
+import { MarketEmpty } from "@/components/shell/market-empty";
 import { marketByCode } from "@/data/locale";
 import { useI18n } from "@/lib/i18n";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
@@ -27,8 +29,9 @@ const statusMap: Record<string, Status> = {
 
 export default function ProductsPage() {
   const { t } = useI18n();
+  const { products } = useMarketData();
   const [line, setLine] = useState<(typeof lines)[number]>("All");
-  const [selectedId, setSelectedId] = useState(products[0].id);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const shown = products.filter((p) => line === "All" || p.line === line);
   const selected = products.find((p) => p.id === selectedId) ?? shown[0];
@@ -65,6 +68,9 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {products.length === 0 ? (
+        <div className="p-6"><MarketEmpty what="products" action={t("products.new")} /></div>
+      ) : (
       <div className="grid grid-cols-[300px_1fr] flex-1 min-h-0">
         <ScrollArea className="border-r min-h-0">
           <div ref={listRef}>
@@ -216,6 +222,7 @@ export default function ProductsPage() {
           )}
         </ScrollArea>
       </div>
+      )}
     </div>
   );
 }

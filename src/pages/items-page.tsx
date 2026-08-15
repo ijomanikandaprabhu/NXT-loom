@@ -24,18 +24,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
-import { workItems, typeColors } from "@/data/work-items";
+import { typeColors } from "@/data/work-items";
+import { useMarketData } from "@/lib/market-data";
+import { MarketEmpty } from "@/components/shell/market-empty";
 import { cn } from "@/lib/utils";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
 import { useI18n } from "@/lib/i18n";
 
-const kpis = [
-  { n: "9", l: "Requires Review", trend: null, icon: AlertCircle, tone: "danger" as const },
-  { n: "2", l: "In Progress", trend: "up", pct: "12%", icon: Clock, tone: "info" as const },
-  { n: "2", l: "Complete", trend: "down", pct: "2%", icon: CheckCircle2, tone: "success" as const },
-  { n: "23", l: "Completed by Agent (%)", trend: "up", pct: "72%", icon: Bot, tone: "primary" as const },
-  { n: "98", l: "Efficiency Gained (%)", trend: "up", pct: "72%", icon: Zap, tone: "amber" as const },
-];
+type Kpi = {
+  n: string;
+  l: string;
+  trend: string | null;
+  pct?: string;
+  icon: typeof AlertCircle;
+  tone: keyof typeof tileTone;
+};
 
 const tileTone = {
   danger: { border: "border-destructive/25", bg: "bg-destructive/[0.05]", icon: "bg-destructive/15 text-destructive" },
@@ -54,6 +57,7 @@ const statusMap: Record<string, Status> = {
 export default function ItemsPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { items: workItems, itemKpis } = useMarketData();
   const [query, setQuery] = useState("");
 
   const filtered = workItems.filter(
@@ -64,13 +68,21 @@ export default function ItemsPage() {
 
   const listRef = useStaggerReveal<HTMLDivElement>([query]);
 
+  const kpis = (): Kpi[] => [
+    { n: String(itemKpis.requires), l: "Requires Review", trend: null, icon: AlertCircle, tone: "danger" },
+    { n: String(itemKpis.inReview), l: "In Progress", trend: "up", pct: "12%", icon: Clock, tone: "info" },
+    { n: String(itemKpis.complete), l: "Complete", trend: "up", pct: "4%", icon: CheckCircle2, tone: "success" },
+    { n: `${itemKpis.agentPct}%`, l: "Completed by Agent", trend: "up", pct: "7%", icon: Bot, tone: "primary" },
+    { n: String(workItems.length), l: "Total in market", trend: null, icon: Zap, tone: "amber" },
+  ];
+
   return (
     <div className="flex-1 overflow-auto">
       <div className="px-8 pt-7 pb-10 max-w-[1200px] mx-auto w-full">
         <h1 className="text-[26px] font-bold tracking-tight">{t("items.title")}</h1>
 
         <div className="grid grid-cols-5 gap-3 mt-6">
-          {kpis.map((k) => {
+          {kpis().map((k) => {
             const tone = tileTone[k.tone];
             return (
               <div key={k.l} className={cn("rounded-xl border p-4", tone.border, tone.bg)}>
@@ -112,6 +124,9 @@ export default function ItemsPage() {
           </Button>
         </div>
 
+        {workItems.length === 0 ? (
+          <div className="mt-4"><MarketEmpty what="work items" /></div>
+        ) : (
         <div ref={listRef} className="mt-4 border rounded-xl bg-card overflow-hidden">
           <Table>
             <TableHeader>
@@ -157,6 +172,7 @@ export default function ItemsPage() {
             </TableBody>
           </Table>
         </div>
+        )}
       </div>
     </div>
   );

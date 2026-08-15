@@ -184,6 +184,80 @@ export const placements: Placement[] = [
   },
 ];
 
+placements.push(
+  {
+    id: "PLC-2046",
+    client: "Siam Agro Foods Co., Ltd.",
+    line: "Group Health — 620 lives",
+    market: "TH",
+    currency: "THB",
+    sumInsured: 96_000_000,
+    inception: "01/09/2026",
+    stage: "Comparing",
+    handler: "Wei Larsson",
+    carriersApproached: 4,
+    daysOpen: 4,
+    summary:
+      "Renewal for a food-processing group across three provinces. Two quotes in, one carrier declined on prior maternity experience. The lower quote restricts the provider network outside Bangkok, which affects roughly a third of the workforce.",
+    quotes: [
+      {
+        carrier: "Bangkok Insurance",
+        status: "Quoted",
+        premium: 3_180_000,
+        commission: 12,
+        deviations: ["Provider network limited to Bangkok metro"],
+        received: "1 day ago",
+        note: "Cheapest, but network restriction affects up-country staff",
+      },
+      {
+        carrier: "Muang Thai Life",
+        status: "Quoted",
+        premium: 3_640_000,
+        commission: 10,
+        deviations: ["Matches slip"],
+        received: "2 days ago",
+      },
+      { carrier: "Thai Life Insurance", status: "Declined", deviations: [], note: "Prior maternity loss ratio above appetite" },
+      { carrier: "AIA Thailand", status: "Pending", deviations: [], note: "Awaiting group census clarification" },
+    ],
+  },
+  {
+    id: "PLC-2049",
+    client: "Luzon Retail Holdings Inc.",
+    line: "Commercial Property — 14 stores",
+    market: "PH",
+    currency: "PHP",
+    sumInsured: 420_000_000,
+    inception: "01/08/2026",
+    stage: "Awaiting client",
+    handler: "Ellen Tarca",
+    carriersApproached: 3,
+    daysOpen: 9,
+    summary:
+      "Retail chain across Metro Manila and Cebu. Typhoon and flood sublimits are the deciding factor — the cheapest quote halves the catastrophe sublimit, which the client has not yet been shown.",
+    quotes: [
+      {
+        carrier: "Malayan Insurance",
+        status: "Quoted",
+        premium: 4_820_000,
+        commission: 15,
+        deviations: ["Typhoon sublimit ₱50M vs ₱100M requested", "Flood deductible 5% of TIV"],
+        received: "3 days ago",
+        note: "Materially narrower catastrophe cover",
+      },
+      {
+        carrier: "Pioneer Insurance",
+        status: "Quoted",
+        premium: 5_640_000,
+        commission: 12.5,
+        deviations: ["Matches slip"],
+        received: "4 days ago",
+      },
+      { carrier: "FPG Insurance", status: "Referred", deviations: [], note: "Referred — aggregate exposure in Cebu corridor" },
+    ],
+  }
+);
+
 export const placementKpis = [
   { n: "34", l: "Open placements", tone: "primary" as const },
   { n: "S$4.2M", l: "Premium in market", tone: "info" as const },

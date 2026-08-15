@@ -12,7 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
-import { runs, runKpis, type RunStatus, type StepStatus } from "@/data/runs";
+import { type RunStatus, type StepStatus } from "@/data/runs";
+import { useMarketData } from "@/lib/market-data";
+import { MarketEmpty } from "@/components/shell/market-empty";
 import { useStaggerReveal } from "@/lib/use-stagger-reveal";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -48,8 +50,9 @@ const filters = ["All", "prod", "staging"] as const;
 export default function RunsPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { runs, runKpis } = useMarketData();
   const [env, setEnv] = useState<(typeof filters)[number]>("All");
-  const [selectedId, setSelectedId] = useState(runs[0].id);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const shown = runs.filter((r) => env === "All" || r.environment === env);
   const selected = runs.find((r) => r.id === selectedId) ?? shown[0];
@@ -96,6 +99,9 @@ export default function RunsPage() {
         })}
       </div>
 
+      {runs.length === 0 ? (
+        <div className="p-6"><MarketEmpty what="runs" /></div>
+      ) : (
       <div className="grid grid-cols-[1fr_1.1fr] flex-1 min-h-0">
         <div ref={listRef} className="border-r min-h-0 flex flex-col">
           <ScrollArea className="flex-1 min-h-0">
@@ -203,6 +209,7 @@ export default function RunsPage() {
           )}
         </ScrollArea>
       </div>
+      )}
     </div>
   );
 }

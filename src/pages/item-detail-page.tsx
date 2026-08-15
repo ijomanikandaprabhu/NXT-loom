@@ -49,7 +49,10 @@ export default function ItemDetailPage() {
 
   const detail: ItemDetail | null = useMemo(() => {
     if (!item) return null;
-    return itemDetails[item.id] ?? genericDetail(item.id, item.title, item.summary, item.type);
+    return (
+      itemDetails[item.id] ??
+      genericDetail(item.id, item.title, item.summary, item.type, item.market)
+    );
   }, [item]);
 
   if (!item || !detail) {

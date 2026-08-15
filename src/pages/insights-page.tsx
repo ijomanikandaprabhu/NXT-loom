@@ -8,25 +8,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  headline,
-  stpSeries,
-  byLine,
-  agentPerf,
-  reviewers,
-  calibration,
-} from "@/data/insights-data";
+import { stpSeries, calibration } from "@/data/insights-data";
+import { useMarketData } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 
 const lineTone: Record<string, string> = {
-  "P&C": "bg-primary",
   Health: "bg-info",
-  Life: "bg-warning",
+  Life: "bg-primary",
+  Motor: "bg-warning",
+  Takaful: "bg-success",
+  Micro: "bg-destructive",
 };
 
 export default function InsightsPage() {
   const { t } = useI18n();
+  const { headline, byLine, agentPerf, reviewers, info } = useMarketData();
   return (
     <div className="flex-1 overflow-auto">
       <div className="px-8 pt-7 pb-16 max-w-[1140px] mx-auto w-full">
@@ -34,6 +31,9 @@ export default function InsightsPage() {
         <p className="text-muted-foreground text-[13.5px] mt-1">
           {t("insights.subtitle")}
         </p>
+        <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border bg-secondary/60 px-2.5 py-1 text-[11px] text-muted-foreground">
+          {info.flag} {info.name} · {info.regulator} · {info.currency}
+        </div>
 
         {/* headline metrics */}
         <div className="grid grid-cols-4 gap-3 mt-6">
@@ -66,6 +66,11 @@ export default function InsightsPage() {
 
           <div className="rounded-xl border bg-card p-5">
             <h3 className="text-[13.5px] font-bold">By line of business</h3>
+            {byLine.length === 0 && (
+              <p className="text-[12px] text-muted-foreground mt-3">
+                No lines configured for this market yet.
+              </p>
+            )}
             <div className="mt-4 space-y-4">
               {byLine.map((l) => (
                 <div key={l.line}>
