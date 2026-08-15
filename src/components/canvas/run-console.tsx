@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RunStep, StepStatus } from "@/lib/use-flow-run";
@@ -33,6 +34,24 @@ export function RunConsole({
   collapsed: boolean;
   onToggle: () => void;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Publish the console height so viewport-docked UI (the market switcher)
+  // can sit above it instead of over its rows.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const publish = () =>
+      document.documentElement.style.setProperty("--run-console-h", `${el.offsetHeight}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty("--run-console-h");
+    };
+  }, []);
+
   // Bars are laid out on a shared timeline so the waterfall reads as elapsed time.
   const total = Math.max(
     steps.reduce((n, s) => n + s.durationMs, 0),
@@ -46,7 +65,7 @@ export function RunConsole({
   });
 
   return (
-    <div className="border-t bg-card shrink-0">
+    <div ref={rootRef} className="border-t bg-card shrink-0">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-center py-1 hover:bg-secondary/60 transition-colors cursor-pointer"

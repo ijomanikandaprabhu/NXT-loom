@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { AppTopbar } from "./topbar";
+import { FloatingMarketSwitcher } from "./floating-market-switcher";
 
 export function AppLayout() {
   return (
@@ -8,6 +9,7 @@ export function AppLayout() {
       <main className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
         <Outlet />
       </main>
+      <FloatingMarketSwitcher />
     </div>
   );
 }

@@ -292,9 +292,9 @@ export default function FlowStudioPage() {
             proOptions={{ hideAttribution: true }}
           >
             <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="var(--border)" />
-            <Controls showInteractive={false} position="bottom-left" />
+            <Controls showInteractive={false} position="bottom-right" />
           </ReactFlow>
-          <div className="absolute right-3.5 bottom-3.5 flex items-center gap-1.5 bg-success/15 text-success rounded-full px-3 py-1.5 text-[11.5px] font-bold shadow-sm pointer-events-none">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-3.5 flex items-center gap-1.5 bg-success/15 text-success rounded-full px-3 py-1.5 text-[11.5px] font-bold shadow-sm pointer-events-none">
             Graph is publishable
           </div>
         </div>

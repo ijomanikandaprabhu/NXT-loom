@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { navItems } from "./nav-items";
-import { MarketSwitcher, LanguageSwitcher } from "./locale-switcher";
+import { LanguageSwitcher } from "./locale-switcher";
 
 const groups = ["Build", "Run", "Govern"] as const;
 const groupKey = { Build: "group.build", Run: "group.run", Govern: "group.govern" } as const;
@@ -79,7 +79,6 @@ export function AppTopbar() {
         {t("shell.production")}
       </span>
 
-      <MarketSwitcher />
       <LanguageSwitcher />
 
       <button className="relative text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
