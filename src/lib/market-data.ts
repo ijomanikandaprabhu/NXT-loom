@@ -4,7 +4,7 @@ import { useOrg } from "@/lib/org-store";
 import { moneyCompact as fmtCompact } from "@/data/locale";
 import { usePlacements } from "@/lib/placements-store";
 import { useProducts } from "@/lib/products-store";
-import { flows } from "@/data/flows";
+import { useFlows } from "@/lib/flows-store";
 import { runs } from "@/data/runs";
 import { kpisForMarket } from "@/data/work-items";
 import { useItems } from "@/lib/items-store";
@@ -27,6 +27,7 @@ export function useMarketData() {
   const { items: allItems } = useItems();
   const { products } = useProducts();
   const { placements } = usePlacements();
+  const { flows } = useFlows();
   const info = marketFor(market) ?? markets[0];
 
   return useMemo(() => {
@@ -131,5 +132,5 @@ export function useMarketData() {
       agentPerf: scopedAgentPerf,
       reviewers,
     };
-  }, [market, info, allItems, products, placements]);
+  }, [market, info, allItems, products, placements, flows]);
 }

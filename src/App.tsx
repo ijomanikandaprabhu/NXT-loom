@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth";
 import { ItemsProvider } from "@/lib/items-store";
 import { ProductsProvider } from "@/lib/products-store";
 import { PlacementsProvider } from "@/lib/placements-store";
+import { FlowsProvider } from "@/lib/flows-store";
 import { RequireAuth } from "@/components/shell/require-auth";
 import LoginPage from "@/pages/login-page";
 import { AppLayout } from "@/components/shell/app-layout";
@@ -28,6 +29,7 @@ export default function App() {
       <ItemsProvider>
       <ProductsProvider>
       <PlacementsProvider>
+      <FlowsProvider>
       <OrgProvider>
       <I18nProvider>
         <TooltipProvider delayDuration={200}>
@@ -57,6 +59,7 @@ export default function App() {
         </TooltipProvider>
       </I18nProvider>
       </OrgProvider>
+      </FlowsProvider>
       </PlacementsProvider>
       </ProductsProvider>
       </ItemsProvider>

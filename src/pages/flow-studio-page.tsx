@@ -19,8 +19,7 @@ import { StatusBadge } from "@/components/shell/status-badge";
 import { NodeInspector } from "@/components/canvas/node-inspector";
 import { NodePanel } from "@/components/canvas/node-panel";
 import { FlowNode } from "@/components/canvas/flow-node";
-import { flows } from "@/data/flows";
-import { flowGraphs } from "@/data/flow-graphs";
+import { useFlows } from "@/lib/flows-store";
 import { recentRuns } from "@/data/node-library";
 import type { FlowNodeData } from "@/data/flow-graphs";
 import { RunConsole } from "@/components/canvas/run-console";
@@ -36,8 +35,12 @@ const nodeTypes: NodeTypes = {
 export default function FlowStudioPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
+  // Both the record and the graph come from the store: a flow created in the
+  // app is absent from the fixtures, and looking one up there while resolving
+  // the other through the store meant a generated flow rendered "not found".
+  const { flows, graphFor } = useFlows();
   const flow = flows.find((f) => f.id === id);
-  const graph = flowGraphs[id];
+  const graph = graphFor(id);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(graph?.nodes ?? []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(graph?.edges ?? []);
@@ -46,7 +49,10 @@ export default function FlowStudioPage() {
   const [showNodes, setShowNodes] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
   const [version, setVersion] = useState("v1.0.0");
-  const [active, setActive] = useState(true);
+  // Seeded from the flow itself. Hard-coding true meant a draft created a
+  // moment ago announced itself as Active, which is the one thing a generated
+  // flow must not claim.
+  const [active, setActive] = useState(flow?.active ?? false);
   const [editingDraft, setEditingDraft] = useState(false);
   const [consoleCollapsed, setConsoleCollapsed] = useState(false);
   const [selectedStep, setSelectedStep] = useState(0);
@@ -109,7 +115,9 @@ export default function FlowStudioPage() {
         </button>
         <div className="flex items-center gap-2.5 flex-wrap">
           <span className="font-bold text-[15px]">{flow.name}</span>
-          <StatusBadge status="success">Active</StatusBadge>
+          <StatusBadge status={active ? "success" : "neutral"}>
+            {active ? "Active" : "Inactive"}
+          </StatusBadge>
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
             {editingDraft ? (

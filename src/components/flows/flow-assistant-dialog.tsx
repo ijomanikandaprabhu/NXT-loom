@@ -10,7 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { exampleFlows, proposeFlow, type FlowProposal, type FlowStepKind } from "@/lib/flow-assistant";
+import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useFlows } from "@/lib/flows-store";
 import { useOrg } from "@/lib/org-store";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +30,12 @@ const kindTone: Record<FlowStepKind, string> = {
  * Describe a process; get a proposed flow outline.
  *
  * Every step states why it is there, so the outline can be argued with rather
- * than accepted. It stops at a proposal — a generated flow that reached
- * production unreviewed is the exact failure this product exists to prevent.
+ * than accepted, and it can then be created as an inactive draft on the canvas.
+ *
+ * Creating a draft is not the risk worth guarding against — refusing to create
+ * anything only meant drawing the same graph by hand, which is slower, not
+ * safer. What must never happen automatically is promotion to production, and
+ * that still cannot.
  */
 export function FlowAssistantDialog({
   open,
@@ -40,6 +46,8 @@ export function FlowAssistantDialog({
 }) {
   const { market } = useI18n();
   const { marketFor } = useOrg();
+  const { createFromProposal } = useFlows();
+  const navigate = useNavigate();
   const [text, setText] = useState("");
   const [proposal, setProposal] = useState<FlowProposal | null>(null);
 
@@ -118,6 +126,24 @@ export function FlowAssistantDialog({
                 </li>
               ))}
             </ol>
+
+            <div className="flex items-center gap-2.5 flex-wrap mt-4 pt-3 border-t">
+              <Button
+                size="sm"
+                onClick={() => {
+                  const flow = createFromProposal(proposal.title, proposal.steps, market);
+                  onOpenChange(false);
+                  setProposal(null);
+                  setText("");
+                  navigate(`/flows/${flow.id}`);
+                }}
+              >
+                Create as draft
+              </Button>
+              <span className="text-[11.5px] text-muted-foreground">
+                Opens on the canvas, inactive, for you to edit before it runs.
+              </span>
+            </div>
 
             {proposal.notes.length > 0 && (
               <div className="mt-4 pt-3 border-t space-y-1.5">
