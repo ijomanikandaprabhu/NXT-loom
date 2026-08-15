@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { useItems } from "@/lib/items-store";
+import { useI18n } from "@/lib/i18n";
 import { ReviewActions } from "@/components/items/review-actions";
 import { ActivityTrail } from "@/components/items/activity-trail";
 import { itemDetails, genericDetail, type ItemDetail } from "@/data/item-details";
@@ -46,6 +47,7 @@ export default function ItemDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const { items } = useItems();
+  const { t } = useI18n();
   const item = items.find((w) => w.id === id);
   const [tab, setTab] = useState<"insights" | "review">("insights");
 
@@ -93,7 +95,7 @@ export default function ItemDetailPage() {
 
         <section className="mt-5 rounded-lg border bg-card p-4">
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
-            Decision history
+            {t("review.decisionHistory")}
           </h2>
           <ActivityTrail itemId={item.id} />
         </section>

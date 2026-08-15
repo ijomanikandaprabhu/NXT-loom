@@ -70,7 +70,7 @@ export default function PlacementsPage() {
         {placementKpis.map((k) => (
           <div key={k.l} className={cn("rounded-xl border p-3.5", kpiTone[k.tone])}>
             <div className="text-[21px] font-bold tracking-tight tabular-nums">{k.n}</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">{k.l}</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">{t(k.l)}</div>
           </div>
         ))}
       </div>

@@ -69,11 +69,11 @@ export default function ItemsPage() {
   const listRef = useStaggerReveal<HTMLDivElement>([query]);
 
   const kpis = (): Kpi[] => [
-    { n: String(itemKpis.requires), l: "Requires Review", trend: null, icon: AlertCircle, tone: "danger" },
-    { n: String(itemKpis.inReview), l: "In Progress", trend: "up", pct: "12%", icon: Clock, tone: "info" },
-    { n: String(itemKpis.complete), l: "Complete", trend: "up", pct: "4%", icon: CheckCircle2, tone: "success" },
-    { n: `${itemKpis.agentPct}%`, l: "Completed by Agent", trend: "up", pct: "7%", icon: Bot, tone: "primary" },
-    { n: String(workItems.length), l: "Total in market", trend: null, icon: Zap, tone: "amber" },
+    { n: String(itemKpis.requires), l: "kpi.requiresReview", trend: null, icon: AlertCircle, tone: "danger" },
+    { n: String(itemKpis.inReview), l: "kpi.inProgress", trend: "up", pct: "12%", icon: Clock, tone: "info" },
+    { n: String(itemKpis.complete), l: "kpi.complete", trend: "up", pct: "4%", icon: CheckCircle2, tone: "success" },
+    { n: `${itemKpis.agentPct}%`, l: "kpi.completedByAgent", trend: "up", pct: "7%", icon: Bot, tone: "primary" },
+    { n: String(workItems.length), l: "kpi.totalInMarket", trend: null, icon: Zap, tone: "amber" },
   ];
 
   return (
@@ -91,7 +91,7 @@ export default function ItemsPage() {
                 </span>
                 <div className="text-[26px] font-bold tracking-tight tabular-nums">{k.n}</div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11.5px] text-muted-foreground">{k.l}</span>
+                  <span className="text-[11.5px] text-muted-foreground">{t(k.l)}</span>
                   {k.trend && (
                     <span
                       className={cn(

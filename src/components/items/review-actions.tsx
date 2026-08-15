@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import { useItems } from "@/lib/items-store";
+import { useI18n } from "@/lib/i18n";
 import type { WorkItem } from "@/data/work-items";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 export function ReviewActions({ item }: { item: WorkItem }) {
   const { user, can } = useAuth();
   const { decide, outcomeFor } = useItems();
+  const { t } = useI18n();
   const [pending, setPending] = useState<"reject" | "escalate" | null>(null);
   const [note, setNote] = useState("");
 
@@ -29,7 +31,7 @@ export function ReviewActions({ item }: { item: WorkItem }) {
     return (
       <div className="flex items-center gap-2 rounded-lg border bg-secondary/40 px-3.5 py-2.5 text-[12px] text-muted-foreground">
         <Lock className="size-3.5 shrink-0" />
-        Your role can view this item but not decide it.
+        {t("review.noDecideRights")}
       </div>
     );
   }
@@ -46,10 +48,10 @@ export function ReviewActions({ item }: { item: WorkItem }) {
           )}
         >
           {outcome === "rejected" ? <X className="size-3.5" /> : <Check className="size-3.5" />}
-          {outcome === "rejected" ? "Rejected" : "Approved"} by {item.reviewer}
+          {outcome === "rejected" ? t("review.reject") : t("review.approve")} · {item.reviewer}
         </span>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => decide(item.id, "reopen")}>
-          <Undo2 className="size-3.5" /> Reopen
+          <Undo2 className="size-3.5" /> {t("review.reopen")}
         </Button>
       </div>
     );
@@ -91,7 +93,7 @@ export function ReviewActions({ item }: { item: WorkItem }) {
             Cancel
           </Button>
           {note.trim().length < 4 && (
-            <span className="text-[11px] text-muted-foreground">A reason is required.</span>
+            <span className="text-[11px] text-muted-foreground">{t("review.reasonRequired")}</span>
           )}
         </div>
       </div>
@@ -102,20 +104,20 @@ export function ReviewActions({ item }: { item: WorkItem }) {
     <div className="flex items-center gap-2 flex-wrap">
       {!mine && (
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => decide(item.id, "claim")}>
-          <UserPlus className="size-3.5" /> Assign to me
+          <UserPlus className="size-3.5" /> {t("review.assignToMe")}
         </Button>
       )}
       <Button size="sm" className="gap-1.5" onClick={() => decide(item.id, "approve")}>
-        <Check className="size-3.5" /> Approve
+        <Check className="size-3.5" /> {t("review.approve")}
       </Button>
       <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setPending("reject")}>
-        <X className="size-3.5" /> Reject
+        <X className="size-3.5" /> {t("review.reject")}
       </Button>
       <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setPending("escalate")}>
-        <AlertTriangle className="size-3.5" /> Escalate
+        <AlertTriangle className="size-3.5" /> {t("review.escalate")}
       </Button>
       {mine && (
-        <span className="text-[11px] text-muted-foreground ml-1">Assigned to you</span>
+        <span className="text-[11px] text-muted-foreground ml-1">{t("review.assignedToYou")}</span>
       )}
     </div>
   );

@@ -60,17 +60,17 @@ export function useMarketData() {
       0
     );
     const placementKpis = [
-      { n: String(open.length), l: "Open placements", tone: "primary" as const },
-      { n: inMarket ? fmtCompact(inMarket, info.currency) : "—", l: "Premium in market", tone: "info" as const },
+      { n: String(open.length), l: "kpi.openPlacements", tone: "primary" as const },
+      { n: inMarket ? fmtCompact(inMarket, info.currency) : "—", l: "kpi.premiumInMarket", tone: "info" as const },
       {
         n: scopedPlacements.length
           ? `${Math.round((bound / scopedPlacements.length) * 100)}%`
           : "—",
-        l: "Quote-to-bind rate",
+        l: "kpi.quoteToBind",
         tone: "success" as const,
       },
-      { n: String(awaiting), l: "Awaiting carrier", tone: "warning" as const },
-      { n: scopedPlacements.length ? "3.4d" : "—", l: "Median quote turnaround", tone: "info" as const },
+      { n: String(awaiting), l: "kpi.awaitingCarrier", tone: "warning" as const },
+      { n: scopedPlacements.length ? "3.4d" : "—", l: "kpi.medianTurnaround", tone: "info" as const },
     ];
 
     // Run KPIs are derived from the scoped runs, so they never contradict the list.
@@ -81,11 +81,11 @@ export function useMarketData() {
       ? ((ok / scopedRuns.length) * 100).toFixed(1)
       : "0.0";
     const runKpis = [
-      { n: String(scopedRuns.length), l: "Runs, last 24h", tone: "primary" as const },
-      { n: `${completion}%`, l: "Completion rate", tone: "success" as const },
-      { n: String(waiting), l: "Awaiting review", tone: "warning" as const },
-      { n: String(failed), l: "Failed, last 24h", tone: "danger" as const },
-      { n: scopedRuns.length ? "41s" : "—", l: "Median duration", tone: "info" as const },
+      { n: String(scopedRuns.length), l: "kpi.runs24h", tone: "primary" as const },
+      { n: `${completion}%`, l: "kpi.completionRate", tone: "success" as const },
+      { n: String(waiting), l: "status.awaitingReview", tone: "warning" as const },
+      { n: String(failed), l: "kpi.failed24h", tone: "danger" as const },
+      { n: scopedRuns.length ? "41s" : "—", l: "kpi.medianDuration", tone: "info" as const },
     ];
 
     // Headline metrics shift per market — SEA maturity is genuinely uneven.
