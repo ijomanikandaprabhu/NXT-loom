@@ -5,11 +5,13 @@ import { I18nProvider } from "@/lib/i18n";
 import { OrgProvider } from "@/lib/org-store";
 import { AuthProvider } from "@/lib/auth";
 import { ItemsProvider } from "@/lib/items-store";
+import { ProductsProvider } from "@/lib/products-store";
 import { RequireAuth } from "@/components/shell/require-auth";
 import LoginPage from "@/pages/login-page";
 import { AppLayout } from "@/components/shell/app-layout";
 const AssistantPage = lazy(() => import("@/pages/assistant-page"));
 const ProductsPage = lazy(() => import("@/pages/products-page"));
+const ProductEditorPage = lazy(() => import("@/pages/product-editor-page"));
 const FlowsPage = lazy(() => import("@/pages/flows-page"));
 const FlowStudioPage = lazy(() => import("@/pages/flow-studio-page"));
 const PlacementsPage = lazy(() => import("@/pages/placements-page"));
@@ -23,6 +25,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ItemsProvider>
+      <ProductsProvider>
       <OrgProvider>
       <I18nProvider>
         <TooltipProvider delayDuration={200}>
@@ -34,6 +37,8 @@ export default function App() {
             <Route index element={<Navigate to="/assistant" replace />} />
             <Route path="assistant" element={<AssistantPage />} />
             <Route path="products" element={<ProductsPage />} />
+            <Route path="products/new" element={<ProductEditorPage />} />
+            <Route path="products/:id/edit" element={<ProductEditorPage />} />
             <Route path="flows" element={<FlowsPage />} />
             <Route path="flows/:id" element={<FlowStudioPage />} />
             <Route path="placements" element={<PlacementsPage />} />
@@ -50,6 +55,7 @@ export default function App() {
         </TooltipProvider>
       </I18nProvider>
       </OrgProvider>
+      </ProductsProvider>
       </ItemsProvider>
     </AuthProvider>
   );

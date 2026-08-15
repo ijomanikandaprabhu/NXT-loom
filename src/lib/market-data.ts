@@ -3,7 +3,7 @@ import { useI18n } from "@/lib/i18n";
 import { useOrg } from "@/lib/org-store";
 import { moneyCompact as fmtCompact } from "@/data/locale";
 import { placements } from "@/data/placements";
-import { products } from "@/data/products";
+import { useProducts } from "@/lib/products-store";
 import { flows } from "@/data/flows";
 import { runs } from "@/data/runs";
 import { kpisForMarket } from "@/data/work-items";
@@ -25,6 +25,7 @@ export function useMarketData() {
   // Read through the store so a review decision moves the list and the KPIs
   // together — numbers that disagree with the rows below them read as a bug.
   const { items: allItems } = useItems();
+  const { products } = useProducts();
   const info = marketFor(market) ?? markets[0];
 
   return useMemo(() => {
@@ -129,5 +130,5 @@ export function useMarketData() {
       agentPerf: scopedAgentPerf,
       reviewers,
     };
-  }, [market, info, allItems]);
+  }, [market, info, allItems, products]);
 }

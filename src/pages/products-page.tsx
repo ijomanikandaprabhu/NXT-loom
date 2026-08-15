@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Plus, Layers3, ShieldCheck, Globe2, GitBranch } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
+import { useProducts } from "@/lib/products-store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { type Line } from "@/data/products";
@@ -30,6 +33,10 @@ const statusMap: Record<string, Status> = {
 export default function ProductsPage() {
   const { t } = useI18n();
   const { products } = useMarketData();
+  const navigate = useNavigate();
+  const { can } = useAuth();
+  const { isCustom, isEdited, save } = useProducts();
+  const mayEdit = can("product.edit");
   const [line, setLine] = useState<(typeof lines)[number]>("All");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -62,9 +69,11 @@ export default function ProductsPage() {
               </button>
             ))}
           </div>
-          <Button size="sm" className="gap-1.5">
-            <Plus className="size-3.5" /> {t("products.new")}
-          </Button>
+          {mayEdit && (
+            <Button size="sm" className="gap-1.5" onClick={() => navigate("/products/new")}>
+              <Plus className="size-3.5" /> {t("products.new")}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -119,8 +128,46 @@ export default function ProductsPage() {
                   </p>
                 </div>
                 <div className="ml-auto flex gap-2">
-                  <Button variant="outline" size="sm">Duplicate</Button>
-                  <Button size="sm">Publish</Button>
+                  {isCustom(selected.id) && (
+                    <span className="self-center text-[9.5px] font-bold uppercase tracking-wide rounded bg-info/15 text-info px-1.5 py-0.5">
+                      custom
+                    </span>
+                  )}
+                  {isEdited(selected.id) && (
+                    <span className="self-center text-[9.5px] font-bold uppercase tracking-wide rounded bg-warning/15 text-warning px-1.5 py-0.5">
+                      edited
+                    </span>
+                  )}
+                  {mayEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          navigate("/products/new", {
+                            state: {
+                              clone: {
+                                ...structuredClone(selected),
+                                id: `prod-${Date.now().toString(36)}`,
+                                name: `${selected.name} (copy)`,
+                                status: "Draft",
+                              },
+                            },
+                          })
+                        }
+                      >
+                        Duplicate
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/products/${selected.id}/edit`)}>
+                        Edit
+                      </Button>
+                      {selected.status !== "Published" && (
+                        <Button size="sm" onClick={() => save({ ...selected, status: "Published" })}>
+                          Publish
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 

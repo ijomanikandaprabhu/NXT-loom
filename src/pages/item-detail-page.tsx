@@ -11,7 +11,6 @@ import {
   Search,
   ChevronsUpDown,
   AlertTriangle,
-  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -434,10 +433,12 @@ function ReviewTab({ detail }: { detail: ItemDetail }) {
         ))}
       </div>
 
-      <div className="flex items-center justify-end gap-2 mt-8 border-t pt-4">
-        <Button variant="outline" size="sm">Cancel</Button>
-        <Button size="sm" className="gap-1.5"><Send className="size-3.5" /> Submit</Button>
-      </div>
+      {/* The decision lives in the action bar at the top of the page. A second,
+          inert Submit here only invited people to press the wrong one. */}
+      <p className="mt-8 border-t pt-4 text-[11.5px] text-muted-foreground">
+        Field corrections are saved as you edit. Approve, reject or escalate the item
+        from the actions at the top of the page.
+      </p>
     </div>
   );
 }
