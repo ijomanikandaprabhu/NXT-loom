@@ -3,6 +3,7 @@ import { AlertTriangle, Check, Send, Sparkles, TrendingDown } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { BindAction } from "@/components/placements/bind-action";
 import { usePlacements } from "@/lib/placements-store";
+import { useAuth } from "@/lib/auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge, type Status } from "@/components/shell/status-badge";
 import { type QuoteStatus } from "@/data/placements";
@@ -40,6 +41,7 @@ export default function PlacementsPage() {
   const { t, money, moneyCompact } = useI18n();
   const { placements, placementKpis } = useMarketData();
   const { chase, eventsFor } = usePlacements();
+  const { external } = useAuth();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = placements.find((p) => p.id === selectedId) ?? placements[0];
   const listRef = useStaggerReveal<HTMLDivElement>([]);
@@ -54,7 +56,9 @@ export default function PlacementsPage() {
         <div>
           <h1 className="text-[20px] font-bold tracking-tight">{t("placements.title")}</h1>
           <p className="text-[12.5px] text-muted-foreground mt-0.5">
-            {t("placements.subtitle")}
+            {external
+              ? `Submissions placed by ${external.firm}. You see only your own — never the insurer's wider book.`
+              : t("placements.subtitle")}
           </p>
         </div>
         <Button size="sm" className="ml-auto gap-1.5">

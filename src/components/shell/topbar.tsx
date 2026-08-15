@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Eye, LogOut, RotateCcw, Sparkles } from "lucide-react";
+import { Bell, Building2, Eye, LogOut, RotateCcw, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ const navKey: Record<string, string> = {
 export function AppTopbar() {
   const location = useLocation();
   const { t } = useI18n();
-  const { user, allowedRoutes, signOut } = useAuth();
+  const { user, allowedRoutes, signOut, external } = useAuth();
   const navigate = useNavigate();
   const [resetOpen, setResetOpen] = useState(false);
 
@@ -49,6 +49,7 @@ export function AppTopbar() {
         <span className="font-bold text-[15.5px] tracking-tight leading-none">NXT Loom</span>
       </Link>
 
+      {!external && (
       <Link
         to="/assistant"
         className={cn(
@@ -61,6 +62,7 @@ export function AppTopbar() {
         <Sparkles className="size-3.5" />
         {t("nav.copilot")}
       </Link>
+      )}
 
       <nav className="flex items-center gap-4">
         {groups.map((g, gi) => (
@@ -94,10 +96,23 @@ export function AppTopbar() {
 
       <div className="flex-1" />
 
-      <span className="inline-flex items-center gap-1 text-[11.5px] text-success font-semibold">
-        <span className="size-1.5 rounded-full bg-success" />
-        {t("shell.production")}
-      </span>
+      {external ? (
+        <span
+          className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-info"
+          title="You are signed in as an external partner and see only your own submissions"
+        >
+          <Building2 className="size-3.5" />
+          {external.firm}
+          <span className="text-[9.5px] font-bold uppercase tracking-wide rounded bg-info/15 px-1.5 py-0.5">
+            partner
+          </span>
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-[11.5px] text-success font-semibold">
+          <span className="size-1.5 rounded-full bg-success" />
+          {t("shell.production")}
+        </span>
+      )}
 
       <LanguageSwitcher />
 

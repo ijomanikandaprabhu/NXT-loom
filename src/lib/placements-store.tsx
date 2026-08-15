@@ -59,7 +59,7 @@ function read<T>(key: string, fallback: T): T {
 }
 
 export function PlacementsProvider({ children }: { children: React.ReactNode }) {
-  const { user, can } = useAuth();
+  const { user, can, external } = useAuth();
   const [patches, setPatches] = useState<Record<string, Override>>(() => read(STORE_PATCH, {}));
   const [created, setCreated] = useState<Placement[]>(() => read(STORE_NEW, []));
 
@@ -71,13 +71,18 @@ export function PlacementsProvider({ children }: { children: React.ReactNode }) 
   }, [created]);
 
   const value = useMemo<PlacementsValue>(() => {
-    const merged: Placement[] = [
+    const all: Placement[] = [
       ...seedPlacements.map((p) => {
         const o = patches[p.id];
         return o ? { ...p, stage: o.stage ?? p.stage, quotes: o.quotes ?? p.quotes } : p;
       }),
       ...created,
     ];
+
+    // The tenant boundary is applied here, not in the page. Filtering in a
+    // component leaves every other consumer of this store — KPI tiles, Copilot,
+    // a future export — reading the whole book.
+    const merged = external ? all.filter((p) => p.handler === external.handle) : all;
 
     const base = (id: string) => merged.find((p) => p.id === id);
 
@@ -159,7 +164,7 @@ export function PlacementsProvider({ children }: { children: React.ReactNode }) 
         );
       },
     };
-  }, [patches, created, user, can]);
+  }, [patches, created, user, can, external]);
 
   return <PlacementsContext.Provider value={value}>{children}</PlacementsContext.Provider>;
 }

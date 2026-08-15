@@ -16,6 +16,15 @@ export function RequireAuth() {
   if (!user) return <Navigate to="/login" replace state={{ from: pathname }} />;
 
   const base = `/${pathname.split("/")[1] ?? ""}`;
+
+  // External partners get their allowed routes and nothing else. The assistant
+  // is open to internal staff, but it answers from the tenant's items, runs and
+  // reviewers — exactly the book a partner must never see.
+  if (user.external) {
+    const home = allowedRoutes[0] ?? "/placements";
+    return allowedRoutes.includes(base) ? <Outlet /> : <Navigate to={home} replace />;
+  }
+
   const open = base === "/assistant" || base === "/";
   if (!open && !allowedRoutes.includes(base)) {
     return <Navigate to="/assistant" replace />;

@@ -77,6 +77,11 @@ export default function LoginPage() {
                   >
                     {u.base}
                   </span>
+                  {u.external && (
+                    <span className="text-[9.5px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 bg-info/15 text-info">
+                      external partner
+                    </span>
+                  )}
                   {u.readOnly && (
                     <span className="inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 bg-warning/15 text-warning">
                       <Eye className="size-2.5" /> read-only

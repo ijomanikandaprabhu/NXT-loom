@@ -50,6 +50,17 @@ export type User = {
   bindAuthority?: number;
   /** Oversight roles read everything and write nothing, by design. */
   readOnly?: boolean;
+  /**
+   * External party — a broker or partner working with this tenant rather than
+   * inside it.
+   *
+   * This is a boundary, not a permission level: an external user must never see
+   * the tenant's book, only the records naming them. Whether a broker is
+   * internal or external depends on who the tenant is — staff inside a
+   * brokerage, an outside party seen from an insurer — so it is stated per user
+   * rather than inferred from the role.
+   */
+  external?: { firm: string; handle: string };
 };
 
 /** Routes a base role can reach. Assistant is always available. */
@@ -136,6 +147,16 @@ export const demoUsers: User[] = [
     capabilities: ["flow.edit", "run.manage"],
   },
   {
+    id: "u_broker",
+    name: "Farah Idris",
+    initials: "FI",
+    title: "Broker — Meridian Risk Partners",
+    base: "producer",
+    markets: ["ID", "MY"],
+    capabilities: [],
+    external: { firm: "Meridian Risk Partners", handle: "Umar Macarilay" },
+  },
+  {
     id: "u_compliance",
     name: "Somchai Wattana",
     initials: "SW",
@@ -168,6 +189,8 @@ type AuthValue = {
   allowedRoutes: string[];
   /** Markets the signed-in user may see. */
   allowedMarkets: MarketCode[];
+  /** Set when the signed-in user is outside this tenant. */
+  external?: User["external"];
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -208,7 +231,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (user.readOnly && writeCaps.has(cap)) return false;
         return user.capabilities.includes(cap);
       },
-      allowedRoutes: user
+      allowedRoutes: user?.external
+        ? ["/placements"]
+        : user
         ? Array.from(
             new Set([
               ...navByRole[user.base],
@@ -217,6 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           )
         : [],
       allowedMarkets: user?.markets ?? [],
+      external: user?.external,
     }),
     [user]
   );
