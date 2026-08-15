@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ClipboardList,
   AlertCircle,
@@ -12,15 +12,27 @@ import {
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { conversations, type Conversation } from "@/data/conversations";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
+import { useMarketData } from "@/lib/market-data";
+import { askCopilot, suggestedQuestions, type CopilotAnswer } from "@/lib/copilot";
 
 const chips = [
-  { icon: ClipboardList, label: "Items processed yesterday?" },
-  { icon: AlertCircle, label: "Items in Require Review status?" },
+  { icon: AlertCircle, label: "What needs review right now?" },
   { icon: UserCircle2, label: "Show items assigned to me" },
-  { icon: BookOpen, label: "What's the maternity waiting period?" },
+  { icon: ClipboardList, label: "Did any runs fail?" },
+  { icon: BookOpen, label: "What products do we sell here?" },
 ];
+
+type Turn = { question: string; answer: CopilotAnswer };
+
+const rowTone: Record<string, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-destructive",
+  default: "text-foreground",
+};
 
 /** Renders *emphasis*, **strong**, and paragraph breaks without a markdown dependency. */
 function RichText({ text }: { text: string }) {
@@ -45,8 +57,43 @@ function RichText({ text }: { text: string }) {
 
 export default function AssistantPage() {
   const { user } = useAuth();
+  const { market } = useI18n();
+  const d = useMarketData();
   const [value, setValue] = useState("");
-  const [active, setActive] = useState<Conversation | null>(null);
+  const [turns, setTurns] = useState<Turn[]>([]);
+
+  // Answers are only true for the market they were asked in, so switching
+  // market clears the transcript rather than leaving stale figures on screen.
+  useEffect(() => {
+    setTurns([]);
+  }, [market]);
+
+  const endRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [turns]);
+
+  const ask = (q: string) => {
+    const question = q.trim();
+    if (!question) return;
+    const answer = askCopilot(question, {
+      marketName: d.info.name,
+      marketFlag: d.info.flag,
+      currency: d.info.currency,
+      regulator: d.info.regulator,
+      takaful: Boolean(d.info.takaful),
+      userName: user?.name ?? "",
+      userTitle: user?.title ?? "",
+      items: d.items,
+      runs: d.runs,
+      products: d.products,
+      placements: d.placements,
+      reviewers: d.reviewers,
+      flowCount: d.flows.length,
+    });
+    setTurns((t) => [...t, { question, answer }]);
+    setValue("");
+  };
 
   return (
     <div className="flex flex-1 min-h-0">
@@ -57,7 +104,7 @@ export default function AssistantPage() {
         <div className="px-2.5">
           <button
             onClick={() => {
-              setActive(null);
+              setTurns([]);
               setValue("");
             }}
             className="w-full flex items-center gap-2 rounded-md border px-3 py-2 text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground cursor-pointer"
@@ -66,23 +113,22 @@ export default function AssistantPage() {
           </button>
         </div>
         <div className="px-3.5 pt-4 pb-1.5 text-[10.5px] font-bold tracking-wider text-muted-foreground uppercase">
-          Your Conversations
+          Try asking
         </div>
         <ScrollArea className="flex-1 px-2.5">
-          {conversations.map((c) => (
+          {suggestedQuestions.map((q) => (
             <button
-              key={c.id}
-              onClick={() => setActive(c)}
-              className={cn(
-                "w-full text-left rounded-md px-2.5 py-2 text-[12.5px] mb-0.5 transition-colors cursor-pointer",
-                active?.id === c.id
-                  ? "bg-accent text-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              )}
+              key={q}
+              onClick={() => ask(q)}
+              className="w-full text-left rounded-md px-2.5 py-2 text-[12.5px] mb-0.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground cursor-pointer"
             >
-              {c.title}
+              {q}
             </button>
           ))}
+          <p className="px-2.5 py-3 text-[10.5px] leading-relaxed text-muted-foreground/70">
+            Answers read the same data the screens render, scoped to the market you
+            have selected.
+          </p>
         </ScrollArea>
       </div>
 
@@ -98,40 +144,64 @@ export default function AssistantPage() {
           }}
         />
 
-        {active ? (
+        {turns.length > 0 ? (
           <ScrollArea className="relative flex-1 min-h-0">
-            <div className="max-w-[720px] mx-auto px-6 py-8 space-y-5">
-              <div className="flex justify-end">
-                <div className="max-w-[80%] rounded-2xl rounded-br-md bg-primary text-primary-foreground px-4 py-2.5 text-[13px] leading-relaxed">
-                  {active.question}
-                </div>
-              </div>
-              <div className="flex gap-2.5">
-                <LoomMark className="size-7 rounded-lg shrink-0 mt-0.5" inner="size-4" />
-                <div className="max-w-[80%] min-w-0">
-                  {active.mode === "knowledge" && (
-                    <div className="inline-flex items-center gap-1.5 mb-1.5 rounded-full bg-info/15 text-info px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide">
-                      <BookOpen className="size-3" /> Answered from policy documents
+            <div className="max-w-[720px] mx-auto px-6 py-8 space-y-6">
+              {turns.map((t, ti) => (
+                <div key={ti} className="space-y-5">
+                  <div className="flex justify-end">
+                    <div className="max-w-[80%] rounded-2xl rounded-br-md bg-primary text-primary-foreground px-4 py-2.5 text-[13px] leading-relaxed">
+                      {t.question}
                     </div>
-                  )}
-                  <div className="rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-[13px] leading-relaxed text-muted-foreground shadow-sm">
-                    <RichText text={active.answer} />
                   </div>
-                  {active.sources && (
-                    <div className="mt-2 space-y-1">
-                      {active.sources.map((s) => (
-                        <div
-                          key={s}
-                          className="inline-flex items-center gap-1.5 mr-2 rounded-md border bg-secondary/50 px-2 py-1 text-[10.5px] text-muted-foreground"
-                        >
-                          <FileText className="size-3 shrink-0" />
-                          <span className="font-mono">{s}</span>
-                        </div>
-                      ))}
+
+                  <div className="flex gap-2.5">
+                    <LoomMark className="size-7 rounded-lg shrink-0 mt-0.5" inner="size-4" />
+                    <div className="max-w-[80%] min-w-0">
+                      <div className="rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-[13px] leading-relaxed text-muted-foreground shadow-sm">
+                        <RichText text={t.answer.text} />
+
+                        {t.answer.rows && t.answer.rows.length > 0 && (
+                          <div className="mt-3 border-t pt-2.5 space-y-1.5">
+                            {t.answer.rows.map((r, ri) => (
+                              <div key={ri} className="flex items-baseline justify-between gap-4 text-[12.5px]">
+                                <span className="min-w-0 truncate text-foreground">{r.label}</span>
+                                {r.value && (
+                                  <span className={cn("font-semibold tabular-nums shrink-0", rowTone[r.tone ?? "default"])}>
+                                    {r.value}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {t.answer.link && (
+                          <Link
+                            to={t.answer.link.to}
+                            className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-[11.5px] font-medium hover:border-primary/40 hover:text-primary transition-colors"
+                          >
+                            {t.answer.link.label}
+                          </Link>
+                        )}
+                        {t.answer.sources?.map((src) => (
+                          <span
+                            key={src}
+                            className="inline-flex items-center gap-1.5 rounded-md border bg-secondary/50 px-2 py-1 text-[10.5px] text-muted-foreground"
+                            title="Where this answer was read from"
+                          >
+                            <FileText className="size-3 shrink-0" />
+                            <span className="font-mono">{src}</span>
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              ))}
+              <div ref={endRef} />
             </div>
           </ScrollArea>
         ) : (
@@ -142,14 +212,14 @@ export default function AssistantPage() {
                 Good evening, {user?.name.split(" ")[0] ?? "there"},
               </h1>
               <p className="text-muted-foreground text-[14px] mt-1.5">
-                How can I help with your work today?
+                Ask me about {d.info.flag} {d.info.name} — the queue, runs, products or placements.
               </p>
 
               <div className="flex flex-wrap items-center justify-center gap-2 mt-7">
                 {chips.map((c) => (
                   <button
                     key={c.label}
-                    onClick={() => setValue(c.label)}
+                    onClick={() => ask(c.label)}
                     className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-[12.5px] font-medium text-muted-foreground shadow-sm transition-all hover:-translate-y-px hover:border-primary/40 hover:text-foreground hover:shadow cursor-pointer"
                   >
                     <c.icon className="size-3.5 text-primary" />
@@ -167,7 +237,13 @@ export default function AssistantPage() {
               <textarea
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder="Ask me about your projects, flows, or workspace"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    ask(value);
+                  }
+                }}
+                placeholder="Ask about the queue, runs, products or placements"
                 rows={1}
                 className="w-full resize-none bg-transparent outline-none text-[13.5px] px-1.5 py-1 placeholder:text-muted-foreground"
               />
@@ -181,6 +257,7 @@ export default function AssistantPage() {
                   </button>
                 </div>
                 <button
+                  onClick={() => ask(value)}
                   disabled={!value.trim()}
                   className="size-8 rounded-md bg-primary text-primary-foreground flex items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                 >
@@ -189,7 +266,7 @@ export default function AssistantPage() {
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground text-center mt-3">
-              NXT Loom Assistant can make mistakes. Please double check its responses.
+              Answers are read from this workspace's live data, scoped to {d.info.flag} {d.info.name}.
             </p>
           </div>
         </div>
