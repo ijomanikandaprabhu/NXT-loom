@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useI18n } from "@/lib/i18n";
-import { marketByCode, moneyCompact as fmtCompact } from "@/data/locale";
+import { useOrg } from "@/lib/org-store";
+import { moneyCompact as fmtCompact } from "@/data/locale";
 import { placements } from "@/data/placements";
 import { products } from "@/data/products";
 import { flows } from "@/data/flows";
@@ -16,9 +17,13 @@ import { byLine, agentPerf, headline, reviewers } from "@/data/insights-data";
  */
 export function useMarketData() {
   const { market } = useI18n();
+  // Resolved through the org store so admin-created markets carry their own
+  // currency and regulator. The seed lookup fell back to Singapore for them,
+  // which quietly relabelled every figure on the page.
+  const { markets, marketFor } = useOrg();
+  const info = marketFor(market) ?? markets[0];
 
   return useMemo(() => {
-    const info = marketByCode(market);
 
     const scopedPlacements = placements.filter((p) => p.market === market);
     const scopedProducts = products.filter((p) => p.markets.includes(market));
@@ -120,5 +125,5 @@ export function useMarketData() {
       agentPerf: scopedAgentPerf,
       reviewers,
     };
-  }, [market]);
+  }, [market, info]);
 }
